@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>K.D Constructions PropDesk</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+*{font-family:'Roboto',sans-serif!important;box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex;flex-direction:column;}
+:root{
+  --bg:#f0f2f8;--card:#fff;--card2:#f7f8fc;--border:#e3e6f0;
+  --accent:#f05a00;--accent2:#ff8c42;--accentbg:#fff3ec;--accentborder:#ffd4b0;
+  --green:#16a06a;--greenbg:#e6f8f1;--greenborder:#b0e8d0;
+  --red:#e03535;--redbg:#fdeaea;--redborder:#f5b8b8;
+  --blue:#2b6ef0;--bluebg:#eaf0ff;--blueborder:#b8d0f8;
+  --amber:#e09000;--amberbg:#fff8e6;--amberborder:#fde8a0;
+  --purple:#7040d0;--purplebg:#f0ebff;--purpleborder:#d0c0f8;
+  --text:#1c1d2e;--text2:#4a4d6a;--muted:#9496b0;
+  --hot:#f03535;--hotbg:#fdeaea;--warm:#f08c00;--warmbg:#fff3dc;--cold:#2b6ef0;--coldbg:#eaf0ff;
+  --shadow:0 2px 16px rgba(28,29,46,0.07);--shadow-accent:0 4px 20px rgba(240,90,0,0.18);
+  --nav-h:62px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+#loadingScreen{display:none!important;}
+
+.header{background:var(--card);padding:12px 18px 10px;border-bottom:1px solid var(--border);box-shadow:var(--shadow);flex-shrink:0;}
+.header-top{display:flex;justify-content:space-between;align-items:center;}
+.brand-top{font-weight:700;font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+.brand-bottom{font-weight:900;font-size:20px;letter-spacing:-0.5px;line-height:1.1;}
+.brand-bottom span{color:var(--accent);}
+.header-right{display:flex;align-items:center;gap:8px;}
+.date-chip{background:var(--accentbg);border:1.5px solid var(--accentborder);border-radius:20px;padding:4px 13px;font-size:11px;color:var(--accent);font-weight:700;}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:var(--green);transition:background 0.3s;}
+.sync-dot.saving{background:var(--amber);animation:pulse 1s infinite;}
+.sync-dot.error{background:var(--red);}
+.stats-row{display:flex;gap:7px;margin-top:10px;}
+.stat-box{flex:1;background:var(--card2);border:1.5px solid var(--border);border-radius:13px;padding:8px 6px 6px;cursor:pointer;transition:all 0.2s;text-align:center;}
+.stat-box:active{transform:scale(0.95);}
+.stat-num{font-size:19px;font-weight:900;}
+.o{color:var(--accent);}.g{color:var(--green);}.b{color:var(--blue);}.r{color:var(--hot);}.p{color:var(--purple);}
+.stat-lbl{font-size:8.5px;color:var(--muted);margin-top:1px;text-transform:uppercase;letter-spacing:0.3px;font-weight:700;}
+
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;}
+
+.bottom-nav{height:var(--nav-h);background:var(--card);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;box-shadow:0 -2px 12px rgba(28,29,46,0.06);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 0;}
+.nav-icon{font-size:19px;line-height:1;}
+.nav-label{font-size:8.5px;font-weight:700;color:var(--muted);}
+.nav-item.active .nav-label{color:var(--accent);}
+.nav-item.active .nav-icon{transform:scale(1.12);}
+.nav-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);margin-top:1px;display:none;}
+.nav-item.active .nav-dot{display:block;}
+
+.page{display:none;}.page.active{display:block;}
+.section{padding:14px 16px;}
+.sec-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.add-btn{background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-accent);}
+
+.dash-alert{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:18px;padding:15px 16px;margin-bottom:14px;color:#fff;box-shadow:var(--shadow-accent);}
+.dash-alert-title{font-weight:900;font-size:15px;}
+.dash-alert-sub{font-size:12px;opacity:0.85;margin-top:2px;}
+.heat-row{display:flex;gap:8px;margin-bottom:14px;}
+.heat-box{flex:1;border-radius:14px;padding:11px 8px;border:1.5px solid;text-align:center;cursor:pointer;}
+.heat-box.hot{background:var(--hotbg);border-color:var(--redborder);}
+.heat-box.warm{background:var(--warmbg);border-color:var(--amberborder);}
+.heat-box.cold{background:var(--coldbg);border-color:var(--blueborder);}
+.heat-num{font-size:22px;font-weight:900;}
+.heat-box.hot .heat-num{color:var(--hot);}
+.heat-box.warm .heat-num{color:var(--warm);}
+.heat-box.cold .heat-num{color:var(--cold);}
+.heat-lbl{font-size:11px;font-weight:700;margin-top:1px;}
+.heat-box.hot .heat-lbl{color:var(--hot);}
+.heat-box.warm .heat-lbl{color:var(--warm);}
+.heat-box.cold .heat-lbl{color:var(--cold);}
+.heat-names{font-size:10px;margin-top:3px;opacity:0.7;font-weight:600;}
+
+.reminder-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:flex-start;gap:12px;}
+.reminder-card.overdue{border-color:var(--redborder);background:var(--redbg);}
+.reminder-card.today{border-color:var(--accentborder);background:var(--accentbg);}
+.reminder-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.reminder-icon.overdue{background:var(--redbg);}
+.reminder-icon.today{background:var(--accentbg);}
+.reminder-icon.upcoming{background:var(--bluebg);}
+.reminder-body{flex:1;min-width:0;}
+.reminder-name{font-weight:900;font-size:14px;}
+.reminder-note{font-size:12px;color:var(--text2);margin-top:2px;}
+.reminder-time{font-size:11px;font-weight:700;margin-top:4px;}
+.reminder-time.overdue{color:var(--red);}
+.reminder-time.today{color:var(--accent);}
+.reminder-time.upcoming{color:var(--blue);}
+.reminder-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.r-btn{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;border:none;cursor:pointer;}
+.r-btn.done{background:var(--greenbg);color:var(--green);}
+.r-btn.wa{background:var(--greenbg);color:var(--green);}
+.r-btn.snooze{background:var(--bluebg);color:var(--blue);}
+.r-btn.edit{background:var(--purplebg);color:var(--purple);}
+
+.client-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow);}
+.cc-top{display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;}
+.cc-left{display:flex;align-items:center;gap:12px;}
+.cc-avatar{width:46px;height:46px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;flex-shrink:0;}
+.cc-name{font-weight:900;font-size:15px;}
+.cc-phone{font-size:11px;color:var(--muted);margin-top:2px;}
+.cc-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.heat-badge{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;}
+.heat-badge.hot{background:var(--hotbg);color:var(--hot);}
+.heat-badge.warm{background:var(--warmbg);color:var(--warm);}
+.heat-badge.cold{background:var(--coldbg);color:var(--cold);}
+.stage-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;}
+.s-new{background:var(--greenbg);color:var(--green);}
+.s-visit{background:var(--bluebg);color:var(--blue);}
+.s-neg{background:var(--amberbg);color:var(--amber);}
+.s-sell{background:var(--purplebg);color:var(--purple);}
+.cc-info{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.cc-pill{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-size:11px;color:var(--text2);}
+.cc-pill b{color:var(--text);}
+.cc-insight{margin-top:10px;background:var(--accentbg);border:1px solid var(--accentborder);border-radius:12px;padding:9px 12px;font-size:12px;color:var(--accent);font-weight:600;cursor:pointer;line-height:1.4;}
+.cc-actions{display:flex;gap:7px;margin-top:12px;}
+.cc-btn{flex:1;padding:9px 4px;border-radius:12px;font-size:11px;font-weight:700;border:none;cursor:pointer;}
+.cc-btn.wa{background:var(--greenbg);color:var(--green);}
+.cc-btn.visit{background:var(--accentbg);color:var(--accent);}
+.cc-btn.journey{background:var(--bluebg);color:var(--blue);}
+.cc-btn.edit{background:var(--purplebg);color:var(--purple);}
+
+.buysell-toggle{display:flex;border-radius:14px;overflow:hidden;border:1.5px solid var(--border);margin-bottom:16px;}
+.buysell-btn{flex:1;padding:12px;font-weight:900;font-size:14px;border:none;cursor:pointer;background:var(--card2);color:var(--muted);}
+.buysell-btn.active-buy{background:var(--greenbg);color:var(--green);}
+.buysell-btn.active-sell{background:var(--purplebg);color:var(--purple);}
+
+.fullpage{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;max-width:480px;margin:0 auto;flex-direction:column;overflow:hidden;}
+.fullpage.open{display:flex;}
+.fp-header{background:var(--card);padding:50px 18px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;box-shadow:var(--shadow);}
+.back-btn{width:38px;height:38px;border-radius:13px;background:var(--card2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex-shrink:0;font-weight:700;}
+.fp-title-block{flex:1;min-width:0;}
+.fp-title{font-weight:900;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fp-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.fp-badge{margin-left:8px;flex-shrink:0;}
+.fp-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+.journey-insight-box{margin:14px 16px 0;background:linear-gradient(135deg,var(--accentbg),#fff);border:1.5px solid var(--accentborder);border-radius:16px;padding:14px;}
+.ji-title{font-weight:900;font-size:13px;color:var(--accent);margin-bottom:8px;}
+.ji-item{font-size:12px;color:var(--text2);padding:3px 0;display:flex;gap:8px;line-height:1.4;}
+.timeline{padding:14px 16px 0;}
+.tl-item{display:flex;gap:12px;margin-bottom:4px;}
+.tl-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accentborder);flex-shrink:0;margin-top:4px;}
+.tl-dot.reminder-dot{background:var(--blue);}
+.tl-connector{width:2px;flex:1;background:var(--border);margin:4px 0;}
+.tl-card{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:13px;margin-bottom:14px;box-shadow:var(--shadow);}
+.tl-card.reminder-card-tl{border-color:var(--blueborder);background:var(--bluebg);}
+.tl-date{font-weight:700;font-size:12px;color:var(--accent);margin-bottom:8px;}
+.tl-date.reminder-date{color:var(--blue);}
+.tl-prop{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:6px;}
+.tl-prop-name{font-weight:700;font-size:13px;}
+.tl-prop-reaction{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;margin-top:4px;}
+.rx-liked{background:var(--greenbg);color:var(--green);}
+.rx-consider{background:var(--amberbg);color:var(--amber);}
+.rx-expensive{background:var(--redbg);color:var(--red);}
+.rx-location{background:var(--bluebg);color:var(--blue);}
+.rx-size{background:var(--purplebg);color:var(--purple);}
+.rx-no{background:var(--redbg);color:var(--red);}
+.tl-note{font-size:12px;color:var(--text2);margin-top:8px;background:var(--card2);border-radius:8px;padding:7px 9px;}
+.journey-actions{padding:14px 16px 32px;display:flex;flex-direction:column;gap:10px;}
+
+.filter-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:var(--muted);margin:12px 0 5px;}
+.filter-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.filter-scroll::-webkit-scrollbar{display:none;}
+.fchip{white-space:nowrap;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--card);cursor:pointer;color:var(--muted);flex-shrink:0;}
+.fchip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+.bld-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden;}
+.bld-header{padding:14px 15px 10px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;}
+.bld-name{font-weight:900;font-size:15px;}
+.bld-loc{font-size:11px;color:var(--muted);margin-top:3px;}
+.bld-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;margin-left:10px;}
+.cat-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;}
+.cat-apartment{background:#eaf0ff;color:#2b6ef0;}
+.cat-builder{background:var(--purplebg);color:var(--purple);}
+.cat-commercial{background:var(--amberbg);color:var(--amber);}
+.cat-affordable{background:var(--greenbg);color:var(--green);}
+.cat-villa{background:var(--accentbg);color:var(--accent);}
+.cat-plot{background:#f0f8e6;color:#5a9000;}
+.listing-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;}
+.listing-sell{background:var(--accentbg);color:var(--accent);}
+.listing-rent{background:var(--bluebg);color:var(--blue);}
+.bld-photos{display:flex;gap:6px;padding:0 12px 10px;overflow-x:auto;scrollbar-width:none;}
+.bld-photos::-webkit-scrollbar{display:none;}
+.bld-photo{width:90px;height:70px;border-radius:12px;object-fit:cover;flex-shrink:0;border:1.5px solid var(--border);}
+.bld-maplink{margin:0 12px 10px;display:flex;align-items:center;gap:8px;background:var(--bluebg);border:1px solid var(--blueborder);border-radius:12px;padding:8px 12px;text-decoration:none;}
+.bld-maplink span{font-size:12px;font-weight:700;color:var(--blue);}
+.floors-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 14px;}
+.floor-tile{border-radius:14px;padding:12px 13px;border:1.5px solid;position:relative;cursor:pointer;}
+.floor-tile:active{transform:scale(0.97);}
+.ft-available{background:var(--greenbg);border-color:var(--greenborder);}
+.ft-hold{background:var(--amberbg);border-color:var(--amberborder);}
+.ft-sold{background:var(--redbg);border-color:var(--redborder);}
+.ft-rented{background:var(--bluebg);border-color:var(--blueborder);}
+.ft-label{font-weight:900;font-size:13px;}
+.ft-available .ft-label{color:var(--green);}
+.ft-hold .ft-label{color:var(--amber);}
+.ft-sold .ft-label{color:var(--red);}
+.ft-rented .ft-label{color:var(--blue);}
+.ft-price{font-weight:900;font-size:15px;color:var(--text);margin-top:4px;}
+.ft-size{font-size:10px;color:var(--muted);margin-top:2px;}
+.ft-status-dot{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;}
+.ft-available .ft-status-dot{background:var(--green);}
+.ft-hold .ft-status-dot{background:var(--amber);}
+.ft-sold .ft-status-dot{background:var(--red);}
+.ft-rented .ft-status-dot{background:var(--blue);}
+
+.bld-detail-hero{background:linear-gradient(135deg,var(--accent),var(--accent2));padding:20px 18px;color:#fff;}
+.bdh-name{font-weight:900;font-size:20px;}
+.bdh-loc{font-size:12px;opacity:0.85;margin-top:3px;}
+.bdh-badges{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.bdh-badge{background:rgba(255,255,255,0.22);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;}
+.bdh-stats{display:flex;gap:10px;margin-top:14px;}
+.bdh-stat{flex:1;background:rgba(255,255,255,0.15);border-radius:12px;padding:10px;text-align:center;}
+.bdh-stat-num{font-weight:900;font-size:20px;}
+.bdh-stat-lbl{font-size:10px;opacity:0.8;margin-top:1px;}
+.detail-photos{display:flex;gap:8px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none;}
+.detail-photos::-webkit-scrollbar{display:none;}
+.detail-photo{width:140px;height:100px;border-radius:14px;object-fit:cover;flex-shrink:0;border:1.5px solid var(--border);}
+.detail-maplink{margin:12px 16px 0;display:flex;align-items:center;gap:8px;background:var(--bluebg);border:1px solid var(--blueborder);border-radius:14px;padding:12px 14px;text-decoration:none;}
+.detail-maplink span{font-size:13px;font-weight:700;color:var(--blue);}
+.bld-floors-list{padding:16px;}
+.floor-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--shadow);}
+.fc-top{display:flex;justify-content:space-between;align-items:center;}
+.fc-floor{font-weight:900;font-size:15px;}
+.fc-price{font-weight:900;font-size:16px;color:var(--accent);}
+.fc-details{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.fc-detail{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:3px 9px;font-size:11px;color:var(--text2);}
+.fc-note{font-size:11px;color:var(--text2);margin-top:8px;background:var(--card2);border-radius:8px;padding:7px 9px;}
+.fc-status-row{display:flex;gap:8px;margin-top:10px;}
+.fc-status-btn{flex:1;padding:7px;border-radius:10px;font-size:12px;font-weight:700;border:none;cursor:pointer;}
+.fc-status-btn.cycle{background:var(--amberbg);color:var(--amber);}
+.fc-status-btn.del{background:var(--redbg);color:var(--red);}
+.detail-actions{padding:0 16px 16px;display:flex;gap:8px;}
+.detail-action-btn{flex:1;padding:11px;border-radius:13px;font-size:12px;font-weight:700;border:none;cursor:pointer;}
+.da-wa{background:var(--greenbg);color:var(--green);}
+.da-edit{background:var(--purplebg);color:var(--purple);}
+.da-del{background:var(--redbg);color:var(--red);}
+
+/* PLANNER - Fixed */
+.planner-date-hdr{background:linear-gradient(135deg,var(--purple),#9060e0);border-radius:18px;padding:16px 18px;margin-bottom:14px;color:#fff;}
+.planner-date-title{font-weight:900;font-size:16px;}
+.planner-date-sub{font-size:12px;opacity:0.8;margin-top:3px;}
+.progress-bar-bg{background:rgba(255,255,255,0.25);border-radius:20px;height:6px;margin-top:8px;}
+.progress-bar-fill{background:#fff;border-radius:20px;height:6px;transition:width 0.3s;}
+.progress-text{font-size:11px;opacity:0.85;margin-top:4px;}
+.planner-nav{display:flex;gap:8px;align-items:center;margin-bottom:14px;background:var(--card);border-radius:14px;padding:10px 14px;border:1.5px solid var(--border);}
+.planner-nav-btn{background:var(--purple);color:#fff;border:none;border-radius:10px;padding:8px 18px;font-size:20px;font-weight:900;cursor:pointer;flex-shrink:0;line-height:1;}
+.planner-nav-date{flex:1;text-align:center;font-weight:900;font-size:13px;color:var(--text);}
+.planner-today-btn{background:var(--purple);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.task-input-row{display:flex;gap:8px;margin-bottom:6px;}
+.task-input{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;}
+.task-input:focus{border-color:var(--purple);}
+.task-date-row{display:flex;gap:8px;margin-bottom:14px;align-items:center;}
+.task-date-input{flex:1;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:9px 13px;font-size:13px;color:var(--text);outline:none;}
+.task-add-btn{background:var(--purple);color:#fff;border:none;border-radius:14px;padding:11px 18px;font-size:20px;font-weight:900;cursor:pointer;flex-shrink:0;}
+.task-item{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;box-shadow:var(--shadow);}
+.task-item.done-task{opacity:0.55;}
+.task-check{width:22px;height:22px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px;}
+.task-check.checked{background:var(--purple);border-color:var(--purple);color:#fff;font-size:13px;}
+.task-text{flex:1;font-size:14px;font-weight:600;line-height:1.4;}
+.task-item.done-task .task-text{text-decoration:line-through;color:var(--muted);}
+.task-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:4px;display:inline-block;}
+.task-tag.crm{background:var(--accentbg);color:var(--accent);}
+.task-tag.manual{background:var(--purplebg);color:var(--purple);}
+.task-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;}
+.journal-textarea{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:14px;font-size:14px;color:var(--text);outline:none;resize:none;height:120px;line-height:1.6;}
+.journal-textarea:focus{border-color:var(--purple);}
+.journal-save-btn{width:100%;background:var(--purple);color:#fff;border:none;border-radius:14px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;}
+.planner-actions{display:flex;gap:8px;margin-top:14px;}
+.planner-action-btn{flex:1;padding:10px;border-radius:13px;font-size:12px;font-weight:700;border:none;cursor:pointer;}
+.pa-clear{background:var(--redbg);color:var(--red);}
+.pa-carry{background:var(--amberbg);color:var(--amber);}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(28,29,46,0.55);z-index:400;backdrop-filter:blur(3px);}
+.modal-overlay.open{display:flex;align-items:flex-end;}
+.modal{background:var(--card);border-radius:24px 24px 0 0;padding:22px 18px 36px;width:100%;max-height:92vh;overflow-y:auto;}
+.modal-title{font-weight:900;font-size:18px;margin-bottom:16px;}
+.form-group{margin-bottom:12px;}
+.form-label{font-size:11px;color:var(--muted);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;font-size:14px;color:var(--text);outline:none;transition:border-color 0.2s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-textarea{resize:none;height:65px;}
+.form-row{display:flex;gap:10px;}
+.form-row .form-group{flex:1;}
+.submit-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:var(--shadow-accent);}
+.cancel-btn{width:100%;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:14px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;}
+.floor-builder{border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-top:6px;}
+.fb-row{padding:12px 13px;border-bottom:1px solid var(--border);background:var(--card2);}
+.fb-row:last-child{border-bottom:none;}
+.fb-floor-title{font-weight:700;font-size:13px;margin-bottom:8px;color:var(--accent);}
+.add-floor-btn{width:100%;padding:10px;background:var(--card2);border:1.5px dashed var(--border);border-radius:12px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;margin-top:8px;}
+.heat-sel{display:flex;gap:8px;}
+.heat-sel-btn{flex:1;padding:10px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid var(--border);background:var(--card2);cursor:pointer;text-align:center;}
+.heat-sel-btn.sel-hot{background:var(--hotbg);border-color:var(--red);color:var(--hot);}
+.heat-sel-btn.sel-warm{background:var(--warmbg);border-color:var(--amber);color:var(--warm);}
+.heat-sel-btn.sel-cold{background:var(--coldbg);border-color:var(--blue);color:var(--cold);}
+.prop-selector{border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:6px;max-height:200px;overflow-y:auto;}
+.prop-sel-item{padding:11px 13px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.prop-sel-item:last-child{border-bottom:none;}
+.prop-sel-item.selected{background:var(--accentbg);}
+.prop-sel-name{font-weight:700;font-size:13px;}
+.prop-sel-loc{font-size:11px;color:var(--muted);}
+.prop-sel-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.prop-sel-item.selected .prop-sel-check{background:var(--accent);border-color:var(--accent);color:#fff;}
+.reaction-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+.rx-btn{padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;}
+.rx-btn.active-liked{background:var(--greenbg);border-color:var(--greenborder);color:var(--green);}
+.rx-btn.active-consider{background:var(--amberbg);border-color:var(--amberborder);color:var(--amber);}
+.rx-btn.active-expensive{background:var(--redbg);border-color:var(--redborder);color:var(--red);}
+.rx-btn.active-location{background:var(--bluebg);border-color:var(--blueborder);color:var(--blue);}
+.rx-btn.active-size{background:var(--purplebg);border-color:var(--purpleborder);color:var(--purple);}
+.rx-btn.active-no{background:var(--redbg);border-color:var(--redborder);color:var(--red);}
+.photo-upload-row{display:flex;gap:8px;margin-top:6px;}
+.photo-slot{width:80px;height:70px;border-radius:12px;border:2px dashed var(--border);background:var(--card2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;}
+.photo-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:10px;}
+.photo-slot-icon{font-size:20px;color:var(--muted);}
+.photo-slot-lbl{font-size:9px;color:var(--muted);margin-top:2px;font-weight:700;}
+.photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.wa-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.wa-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;color:var(--muted);}
+.wa-chip.active{background:var(--green);border-color:var(--green);color:#fff;}
+.wa-preview{background:var(--card2);border:1.5px solid var(--border);border-radius:14px;padding:12px;font-size:12px;color:var(--text2);line-height:1.6;max-height:200px;overflow-y:auto;margin-bottom:12px;white-space:pre-wrap;font-family:monospace!important;}
+.wa-send-btn{width:100%;background:var(--green);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;}
+.scope-box,.next-plan-box{margin-top:10px;background:var(--bluebg);border:1px solid var(--blueborder);border-radius:12px;padding:9px 12px;font-size:12px;color:var(--blue);font-weight:600;line-height:1.4;}
+.scope-box{background:var(--purplebg);border-color:var(--purpleborder);color:var(--purple);}
+.site-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow);}
+.site-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+.site-name{font-weight:900;font-size:15px;}
+.site-loc{font-size:11px;color:var(--muted);margin-top:3px;}
+.site-badge{background:var(--purplebg);color:var(--purple);border-radius:20px;padding:4px 11px;font-size:10px;font-weight:700;white-space:nowrap;}
+.site-money{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.site-money-box{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;}
+.site-money-val{font-size:16px;font-weight:900;}
+.site-money-lbl{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:2px;}
+.site-section{margin-top:12px;}
+.site-section-title{font-size:11px;font-weight:900;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px;}
+.site-entry{display:flex;justify-content:space-between;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:6px;}
+.site-entry-note{font-size:12px;font-weight:700;}
+.site-entry-date{font-size:10px;color:var(--muted);margin-top:2px;}
+.site-entry-amt{font-size:12px;font-weight:900;color:var(--accent);white-space:nowrap;}
+.site-actions{display:flex;gap:8px;margin-top:12px;}
+.site-btn{flex:1;padding:9px;border:none;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;}
+.site-btn.exp{background:var(--redbg);color:var(--red);}
+.site-btn.pay{background:var(--greenbg);color:var(--green);}
+.site-summary{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.site-chip{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 9px;font-size:10px;font-weight:700;color:var(--text2);}
+.site-filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.mini-select{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:7px 9px;font-size:11px;color:var(--text);outline:none;}
+.hidden{display:none!important;}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.sell-section-title{font-weight:900;font-size:14px;color:var(--purple);margin-bottom:12px;padding:10px 0 0;}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty .emo{font-size:38px;margin-bottom:10px;}
+.empty p{font-size:13px;line-height:1.5;}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:22px;font-weight:700;font-size:13px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- PropDesk Final v3 - K.D Constructions -->
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="brand-top">K.D Constructions</div>
+      <div class="brand-bottom">Prop<span>Desk</span></div>
+    </div>
+    <div class="header-right">
+      <div class="sync-dot" id="syncDot"></div>
+      <div class="date-chip" id="dateDisplay"></div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box" onclick="switchTab('reminders')"><div class="stat-num o" id="statFU">0</div><div class="stat-lbl">Follow-ups</div></div>
+    <div class="stat-box" onclick="showHeatClients('hot')"><div class="stat-num r" id="statHot">0</div><div class="stat-lbl">🔥 Hot</div></div>
+    <div class="stat-box" onclick="switchTab('clients')"><div class="stat-num b" id="statClients">0</div><div class="stat-lbl">Clients</div></div>
+    <div class="stat-box" onclick="switchTab('inventory')"><div class="stat-num g" id="statProps">0</div><div class="stat-lbl">Units</div></div>
+    <div class="stat-box" onclick="switchTab('planner')"><div class="stat-num p" id="statTasks">0</div><div class="stat-lbl">Tasks</div></div>
+  </div>
+</div>
+
+<div class="scroll-area">
+  <div class="page active" id="page-dashboard">
+    <div class="section">
+      <div id="dashAlert"></div>
+      <div class="heat-row">
+        <div class="heat-box hot" onclick="showHeatClients('hot')"><div class="heat-num" id="dhHot">0</div><div class="heat-lbl">🔥 Hot</div><div class="heat-names" id="hnHot"></div></div>
+        <div class="heat-box warm" onclick="showHeatClients('warm')"><div class="heat-num" id="dhWarm">0</div><div class="heat-lbl">🌤 Warm</div><div class="heat-names" id="hnWarm"></div></div>
+        <div class="heat-box cold" onclick="showHeatClients('cold')"><div class="heat-num" id="dhCold">0</div><div class="heat-lbl">❄️ Cold</div><div class="heat-names" id="hnCold"></div></div>
+      </div>
+      <div class="sec-hdr">Today's Follow-ups</div>
+      <div id="dashFollowups"></div>
+      <div class="sec-hdr" style="margin-top:6px">Recent Activity</div>
+      <div id="dashRecent"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-clients">
+    <div class="section">
+      <div class="sec-hdr">All Clients <button class="add-btn" onclick="openModal('clientType')">+ Add</button></div>
+      <div class="filter-scroll" id="clientFilters" style="margin-bottom:14px">
+        <div class="fchip active" onclick="filterClients('all',this)">All</div>
+        <div class="fchip" onclick="filterClients('buy',this)">🛒 Buyers</div>
+        <div class="fchip" onclick="filterClients('sell',this)">🏷 Sellers</div>
+        <div class="fchip" onclick="filterClients('renovation',this)">🏗 Renovation</div>
+        <div class="fchip" onclick="filterClients('hot',this)">🔥 Hot</div>
+        <div class="fchip" onclick="filterClients('warm',this)">🌤 Warm</div>
+        <div class="fchip" onclick="filterClients('cold',this)">❄️ Cold</div>
+        <div class="fchip" onclick="filterClients('New Lead',this)">New Lead</div>
+        <div class="fchip" onclick="filterClients('Negotiation',this)">Negotiation</div>
+      </div>
+      <div id="clientList"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-inventory">
+    <div class="section">
+      <div class="sec-hdr">Inventory
+        <div style="display:flex;gap:8px">
+          <button class="add-btn" style="background:var(--green)" onclick="openWAShare()">📤 Share</button>
+          <button class="add-btn" onclick="openModal('property')">+ Add</button>
+        </div>
+      </div>
+      <div class="filter-label">Category</div>
+      <div class="filter-scroll" id="catFilters">
+        <div class="fchip active" onclick="setInvFilter('cat','all',this)">All</div>
+        <div class="fchip" onclick="setInvFilter('cat','Apartment',this)">🏢 Apartment</div>
+        <div class="fchip" onclick="setInvFilter('cat','Builder Floor',this)">🏠 Builder Floor</div>
+        <div class="fchip" onclick="setInvFilter('cat','Villa',this)">🏡 Villa</div>
+        <div class="fchip" onclick="setInvFilter('cat','Plot',this)">🟫 Plot</div>
+        <div class="fchip" onclick="setInvFilter('cat','Commercial',this)">🏪 Commercial</div>
+        <div class="fchip" onclick="setInvFilter('cat','Affordable Housing',this)">💚 Affordable</div>
+      </div>
+      <div class="filter-label">Listing Type</div>
+      <div class="filter-scroll" id="listingFilters">
+        <div class="fchip active" onclick="setInvFilter('listing','all',this)">All</div>
+        <div class="fchip" onclick="setInvFilter('listing','Sell',this)">💰 For Sale</div>
+        <div class="fchip" onclick="setInvFilter('listing','Rent',this)">🔑 For Rent</div>
+      </div>
+      <div class="filter-label">Floor</div>
+      <div class="filter-scroll" id="floorFilters">
+        <div class="fchip active" onclick="setInvFilter('floor','all',this)">All Floors</div>
+        <div class="fchip" onclick="setInvFilter('floor','Ground',this)">Ground</div>
+        <div class="fchip" onclick="setInvFilter('floor','1st',this)">1st</div>
+        <div class="fchip" onclick="setInvFilter('floor','2nd',this)">2nd</div>
+        <div class="fchip" onclick="setInvFilter('floor','3rd',this)">3rd</div>
+        <div class="fchip" onclick="setInvFilter('floor','4th',this)">4th</div>
+      </div>
+      <div class="filter-label">Status</div>
+      <div class="filter-scroll" id="statusFilters">
+        <div class="fchip active" onclick="setInvFilter('status','all',this)">All</div>
+        <div class="fchip" onclick="setInvFilter('status','Available',this)">✅ Available</div>
+        <div class="fchip" onclick="setInvFilter('status','On Hold',this)">⏳ On Hold</div>
+        <div class="fchip" onclick="setInvFilter('status','Sold',this)">🔴 Sold</div>
+        <div class="fchip" onclick="setInvFilter('status','Rented',this)">🔑 Rented</div>
+      </div>
+      <div class="filter-label">Location</div>
+      <div class="filter-scroll" id="locFilters"></div>
+      <div id="propertyList" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-reminders">
+    <div class="section">
+      <div class="sec-hdr">Reminders <button class="add-btn" onclick="openModal('reminder')">+ Add</button></div>
+      <div id="reminderList"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-planner">
+    <div class="section">
+      <div class="planner-date-hdr" id="plannerHdr"></div>
+      <div class="planner-nav">
+        <button class="planner-nav-btn" onclick="shiftPlannerDate(-1)">&#8592;</button>
+        <div class="planner-nav-date" id="plannerNavDate"></div>
+        <button class="planner-nav-btn" onclick="shiftPlannerDate(1)">&#8594;</button>
+        <button class="planner-today-btn" onclick="goToToday()">Today</button>
+      </div>
+      <div class="task-input-row">
+        <input class="task-input" id="taskInput" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTask()"/>
+        <button class="task-add-btn" onclick="addTask()">+</button>
+      </div>
+      <div class="task-date-row">
+        <span style="font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap">For date:</span>
+        <input type="date" class="task-date-input" id="taskDateInput"/>
+      </div>
+      <div class="task-date-row">
+        <label style="display:flex;gap:7px;align-items:center;font-size:12px;color:var(--text2);font-weight:700;white-space:nowrap"><input type="checkbox" id="taskReminderCheck"> Reminder</label>
+        <input type="time" class="task-date-input" id="taskReminderTime" value="10:00"/>
+      </div>
+      <div class="sec-hdr" id="taskListHdr">Tasks</div>
+      <div id="taskList"></div>
+      <div class="planner-actions">
+        <button class="planner-action-btn pa-carry" onclick="carryForward()">⏭ Carry Pending Forward</button>
+        <button class="planner-action-btn pa-clear" onclick="clearDone()">🗑 Clear Completed</button>
+      </div>
+      <div style="margin-top:16px">
+        <div class="sec-hdr">Daily Notes / Journal</div>
+        <textarea class="journal-textarea" id="journalText" placeholder="Write your notes for the day..."></textarea>
+        <button class="journal-save-btn" onclick="saveJournal()">💾 Save Notes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-sites">
+    <div class="section">
+      <div class="sec-hdr">Ongoing Sites <button class="add-btn" onclick="openModal('site')">+ Add</button></div>
+      <div id="siteList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')"><div class="nav-icon">📊</div><div class="nav-label">Dashboard</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-clients" onclick="switchTab('clients')"><div class="nav-icon">👥</div><div class="nav-label">Clients</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-inventory" onclick="switchTab('inventory')"><div class="nav-icon">🏠</div><div class="nav-label">Inventory</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-reminders" onclick="switchTab('reminders')"><div class="nav-icon">🔔</div><div class="nav-label">Reminders</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-planner" onclick="switchTab('planner')"><div class="nav-icon">✅</div><div class="nav-label">Planner</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-sites" onclick="switchTab('sites')"><div class="nav-icon">🏗️</div><div class="nav-label">Sites</div><div class="nav-dot"></div></div>
+</div>
+
+<div class="fullpage" id="journeyPage">
+  <div class="fp-header">
+    <div class="back-btn" id="journeyBack">&#8592;</div>
+    <div class="fp-title-block"><div class="fp-title" id="jName"></div><div class="fp-sub" id="jSub"></div></div>
+    <div class="fp-badge" id="jHeatBadge"></div>
+  </div>
+  <div class="fp-scroll">
+    <div id="journeyInsight" class="journey-insight-box"></div>
+    <div class="timeline" id="journeyTimeline"></div>
+    <div class="journey-actions">
+      <button class="submit-btn" id="jLogVisitBtn">+ Log New Visit</button>
+      <button class="cancel-btn" id="jPlanVisitBtn">📍 Plan Next Visit</button>
+      <button class="cancel-btn" id="jReminderBtn">🔔 Set Reminder</button>
+    </div>
+  </div>
+</div>
+
+<div class="fullpage" id="buildingPage">
+  <div class="fp-header">
+    <div class="back-btn" id="buildingBack">&#8592;</div>
+    <div class="fp-title-block"><div class="fp-title" id="bdName"></div><div class="fp-sub" id="bdLoc"></div></div>
+  </div>
+  <div class="fp-scroll">
+    <div class="bld-detail-hero" id="bdHero"></div>
+    <div id="bdPhotos" class="detail-photos"></div>
+    <div id="bdMapLink"></div>
+    <div class="detail-actions" id="bdActions"></div>
+    <div class="bld-floors-list" id="bdFloors"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// CONSTANTS & STATE
+// ═══════════════════════════════════════
+const LS_KEY='kd_propdesk_v1';
+const LS_PHOTO='kd_photos_v1';
+const LS_TS='kd_ts_v1';
+
+const FB_URL='https://firestore.googleapis.com/v1/projects/propdesk-f50e0/databases/(default)/documents/propdesk/main';
+const FB_KEY='AIzaSyBiBmFAJHTxoZAddAON94u7FQ_d-RpX2io';
+
+const EMPTY_DB=()=>({clients:[],buildings:[],reminders:[],visits:[],sellerVisits:[],tasks:{},journal:{},ongoingSites:[]});
+let DB = EMPTY_DB();
+let isSaving=false, pendingSave=false, lastPushTs=0;
+let currentJourneyClientId=null, currentBuildingId=null, clientFilter='all';
+let invFilters={cat:'all',listing:'all',floor:'all',status:'all',loc:'all'};
+let selectedHeat='warm', visitSelectedProps={}, floorCount=1, photoSlots=[null,null,null];
+let currentPlannerDate='';
+let waFilterCat='all', waFilterStatus='Available', waFilterListing='all', waFilterFloor='all', waFilterLoc='all';
+let clientMode='buy';
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+const todayStr=()=>new Date().toISOString().split('T')[0];
+const tomorrowStr=()=>{const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0];};
+const fmtDate=s=>{try{return new Date(s+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}catch(e){return s;}};
+const fmtTime=t=>{if(!t)return'';try{return new Date('1970-01-01T'+t+':00').toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}catch(e){return t;}};
+const ftCls=s=>s==='Available'?'ft-available':s==='On Hold'?'ft-hold':s==='Rented'?'ft-rented':'ft-sold';
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const setSyncDot=s=>{const el=document.getElementById('syncDot');if(el)el.className='sync-dot'+(s==='saving'?' saving':s==='error'?' error':'');};
+const showToast=msg=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
+const showLoading=show=>{const el=document.getElementById('loadingScreen');if(el)el.style.display=show?'flex':'none';};
+const dlog=()=>{}; // debug logging removed — sync works
+const money=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+function locKey(s){return String(s||'').toLowerCase().replace(/phase/g,'').replace(/lok/g,'lok').replace(/[^a-z0-9]/g,'').replace(/([a-z]+)(\d+)/g,'$1$2').trim();}
+function cleanLocationName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/([A-Za-z])(\d)/g,'$1-$2').replace(/\b\w/g,m=>m.toUpperCase());}
+function knownLocations(){return [...new Set(DB.buildings.map(b=>b.area||b.location).filter(Boolean))].sort();}
+function normalizeLocationName(input){
+  const raw=String(input||'').trim();if(!raw)return'';
+  const key=locKey(raw);const existing=knownLocations().find(l=>locKey(l)===key);
+  return existing||cleanLocationName(raw);
+}
+function locationSelectHTML(prefix,selected=''){
+  const locs=knownLocations();
+  return `<select class="form-select" id="${prefix}_area_mode" onchange="toggleNewLocation('${prefix}')"><option value="">Select existing</option>${locs.map(l=>`<option value="${l}" ${selected===l?'selected':''}>${l}</option>`).join('')}<option value="__new">+ Add New Location</option></select><input class="form-input ${selected?'hidden':''}" id="${prefix}_area_new" placeholder="New location / area" style="margin-top:8px" value="${selected&&!locs.includes(selected)?selected:''}">`;
+}
+function toggleNewLocation(prefix){
+  const sel=document.getElementById(prefix+'_area_mode');const inp=document.getElementById(prefix+'_area_new');
+  if(!sel||!inp)return;inp.classList.toggle('hidden',sel.value!=='__new'&&!!sel.value);
+}
+function getLocationValue(prefix){
+  const sel=document.getElementById(prefix+'_area_mode');const inp=document.getElementById(prefix+'_area_new');
+  return normalizeLocationName(sel&&sel.value&&sel.value!=='__new'?sel.value:(inp?inp.value:''));
+}
+function cleanTitle(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/\b\w/g,m=>m.toUpperCase());}
+
+function ensureDB(){
+  if(!DB.clients)DB.clients=[];
+  if(!DB.buildings)DB.buildings=[];
+  if(!DB.reminders)DB.reminders=[];
+  if(!DB.visits)DB.visits=[];
+  if(!DB.sellerVisits)DB.sellerVisits=[];
+  if(!DB.tasks)DB.tasks={};
+  if(!DB.journal)DB.journal={};
+  if(!DB.ongoingSites)DB.ongoingSites=[];
+  DB.clients.forEach(c=>{if(c.type==='Renovation/Construction'&&c.mode!=='sell')c.mode='renovation';});
+}
+
+function renderAll(){
+  try{updateStats();}catch(e){console.warn('updateStats:',e);}
+  try{renderDashboard();}catch(e){console.warn('renderDashboard:',e);}
+  try{renderClients();}catch(e){console.warn('renderClients:',e);}
+  try{renderInventory();}catch(e){console.warn('renderInventory:',e);}
+  try{renderReminders();}catch(e){console.warn('renderReminders:',e);}
+  try{renderPlanner();}catch(e){console.warn('renderPlanner:',e);}
+  try{renderSites();}catch(e){console.warn('renderSites:',e);}
+}
+
+// ═══════════════════════════════════════
+// LOCAL STORAGE
+// ═══════════════════════════════════════
+function lsSave() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(DB));
+    localStorage.setItem(LS_PHOTO, JSON.stringify(DB.buildings.map(b => ({ id: b.id, photos: b.photos || [] }))));
+  } catch (e) {
+    console.warn("Save error:", e);
+  }
+}
+
+function lsLoad(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(raw){
+      const d=JSON.parse(raw);
+      if(d&&typeof d==='object'&&Array.isArray(d.clients)){
+        DB=d;ensureDB();
+        restorePhotos();
+        return true;
+      }
+    }
+  }catch(e){}
+  return false;
+}
+
+function restorePhotos(){
+  try{
+    const ph=JSON.parse(localStorage.getItem(LS_PHOTO)||'[]');
+    ph.forEach(p=>{const b=DB.buildings.find(x=>x.id===p.id);if(b)b.photos=p.photos||[];});
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════
+// FIREBASE REST API — no SDK, works on every device
+// ═══════════════════════════════════════
+async function fbPush() {
+  if (isSaving) { pendingSave = true; dlog('PUSH queued (already saving)'); return; }
+  isSaving = true;
+  setSyncDot('saving');
+  dlog('PUSH → sending...');
+  try {
+    const d = JSON.parse(JSON.stringify(DB));
+    d.buildings = d.buildings.map(b => ({ ...b, photos: [] }));
+    const ts = Date.now();
+    const body = {
+      fields: {
+        data: { stringValue: JSON.stringify(d) },
+        _ts: { integerValue: String(ts) }
+      }
+    };
+    const res = await fetch(FB_URL + '?key=' + FB_KEY + '&updateMask.fieldPaths=data&updateMask.fieldPaths=_ts', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      localStorage.setItem(LS_TS, String(ts));
+      lastPushTs = ts;
+      setSyncDot('synced');
+      dlog(`PUSH ✅ OK ts=${ts} clients=${DB.clients.length}`);
+    } else {
+      setSyncDot('error');
+      const txt=await res.text();
+      dlog(`PUSH ❌ HTTP ${res.status}: ${txt.substring(0,100)}`);
+    }
+  } catch (e) {
+    setSyncDot('error');
+    dlog(`PUSH ❌ ERROR: ${e.message}`);
+  }
+  isSaving = false;
+  if (pendingSave) { pendingSave = false; setTimeout(fbPush, 500); }
+}
+
+async function fbPull() {
+  dlog('PULL → checking cloud...');
+  try {
+    const res = await fetch(FB_URL + '?key=' + FB_KEY, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' }
+    });
+    if (res.status === 404) {
+      dlog('PULL · no doc yet, pushing local');
+      fbPush();
+      return true;
+    }
+    if (!res.ok) {
+      setSyncDot('error');
+      const txt=await res.text();
+      dlog(`PULL ❌ HTTP ${res.status}: ${txt.substring(0,100)}`);
+      return false;
+    }
+    const data = await res.json();
+    if (data.fields && data.fields.data) {
+      const cloudData = JSON.parse(data.fields.data.stringValue);
+      const cloudTs = parseInt(data.fields._ts?.integerValue || '0');
+      const localTs = parseInt(localStorage.getItem(LS_TS) || '0');
+      const cloudClients=(cloudData.clients||[]).length;
+      dlog(`PULL · cloudTs=${cloudTs} localTs=${localTs} cloudClients=${cloudClients}`);
+      if (cloudTs > localTs) {
+        DB = cloudData;
+        ensureDB();
+        restorePhotos();
+        localStorage.setItem(LS_TS, cloudTs.toString());
+        lsSave();
+        renderAll();
+        dlog(`PULL ✅ UPDATED from cloud (${cloudClients} clients)`);
+      } else {
+        dlog('PULL · local is newer or equal, no update');
+      }
+    } else {
+      dlog('PULL · cloud doc empty');
+    }
+    setSyncDot('synced');
+    return true;
+  } catch (e) {
+    setSyncDot('error');
+    dlog(`PULL ❌ ERROR: ${e.message}`);
+    return false;
+  }
+}
+
+// Every user action calls save() — saves locally AND pushes to cloud
+function save(){
+  lsSave();
+  fbPush();
+}
+
+// ═══════════════════════════════════════
+// DEMO DATA
+// ═══════════════════════════════════════
+function seedDemo(){
+  DB=EMPTY_DB();
+  DB.buildings=[
+    {id:1,name:'B-215 Sushant Lok-3',location:'Gurugram',area:'Sushant Lok',category:'Builder Floor',listing:'Sell',mapUrl:'https://maps.google.com/?q=Sushant+Lok+3+Gurugram',photos:[],ownerId:null,floors:[{label:'Ground Floor',price:'85L',size:'1800 sq.ft',status:'Sold',note:'Corner unit'},{label:'1st Floor',price:'78L',size:'1750 sq.ft',status:'Available',note:'East facing 3BHK'},{label:'2nd Floor',price:'72L',size:'1750 sq.ft',status:'On Hold',note:'Client visit done'},{label:'3rd Floor',price:'68L',size:'1750 sq.ft',status:'Available',note:'Terrace rights'}]},
+    {id:2,name:'A-12 DLF Phase 4',location:'Gurugram',area:'DLF Phase 4',category:'Apartment',listing:'Rent',mapUrl:'',photos:[],ownerId:null,floors:[{label:'3rd Floor',price:'32K/mo',size:'1200 sq.ft',status:'Available',note:'Semi-furnished'},{label:'7th Floor',price:'35K/mo',size:'1200 sq.ft',status:'Rented',note:'Rented till Dec 2026'}]},
+  ];
+  DB.clients=[
+    {id:1,name:'Rajesh Sharma',phone:'9810001234',stage:'Negotiation',heat:'hot',budget:'85L',type:'Builder Floor',location:'Sushant Lok',note:'Wants 3BHK',color:'#f05a00',mode:'buy'},
+    {id:2,name:'Priya Mehta',phone:'9811005678',stage:'Site Visit Scheduled',heat:'warm',budget:'1.2Cr',type:'Apartment',location:'DLF Phase',note:'Sunday visit confirmed',color:'#2b6ef0',mode:'buy'},
+  ];
+  DB.reminders=[{id:1,clientId:1,clientName:'Rajesh Sharma',date:todayStr(),time:'11:00',note:'Call to finalize deal',urgency:'today'}];
+  DB.tasks={};DB.visits=[];DB.journal={};DB.ongoingSites=[];
+  seedFeatureDemos();
+}
+
+function seedFeatureDemos(){
+  ensureDB();
+  if(!DB.clients.some(c=>c.type==='Renovation/Construction')){
+    const cid=Date.now()+301;
+    DB.clients.push({id:cid,name:'Amit Khanna',phone:'9899001122',stage:'Site Visit Scheduled',heat:'hot',budget:'18L',type:'Renovation/Construction',location:'Sushant Lok-1',scope:'Complete 3BHK renovation: civil repairs, modular kitchen, bathroom waterproofing, wardrobes, false ceiling, paint and final handover.',note:'Prefers weekday site updates after 6 PM',color:'#7040d0',mode:'buy',nextVisitPlan:[{propId:'1-1st Floor',propName:'B-215 Sushant Lok-3 · 1st Floor'},{propId:'1-3rd Floor',propName:'B-215 Sushant Lok-3 · 3rd Floor'}]});
+    DB.reminders.push({id:Date.now()+302,clientId:cid,clientName:'Amit Khanna',date:todayStr(),time:'18:00',note:'Share renovation estimate and next site visit slots',urgency:'today'});
+  }
+  if(!DB.ongoingSites.length){
+    DB.ongoingSites.push({id:Date.now()+401,name:'Khanna Residence Renovation',clientName:'Amit Khanna',location:'Sushant Lok-1',status:'In Progress',expenses:[{id:1,date:todayStr(),amount:42500,note:'Waterproofing material and labour'},{id:2,date:tomorrowStr(),amount:18000,note:'Electrical rough-in advance'}],payments:[{id:1,date:todayStr(),amount:100000,note:'Client advance received'}]});
+  }
+}
+
+// ═══════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════
+function updateStats(){
+  const today=todayStr();
+  document.getElementById('statFU').textContent=DB.reminders.filter(r=>r.date<=today).length;
+  document.getElementById('statHot').textContent=DB.clients.filter(c=>c.heat==='hot').length;
+  document.getElementById('statClients').textContent=DB.clients.length;
+  document.getElementById('statProps').textContent=DB.buildings.reduce((a,b)=>a+b.floors.length,0);
+  document.getElementById('statTasks').textContent=(DB.tasks[today]||[]).filter(t=>!t.done).length;
+  ['hot','warm','cold'].forEach(h=>{
+    const cls=DB.clients.filter(c=>c.heat===h);
+    document.getElementById('dh'+cap(h)).textContent=cls.length;
+    document.getElementById('hn'+cap(h)).textContent=cls.slice(0,2).map(c=>c.name.split(' ')[0]).join(', ')+(cls.length>2?'…':'');
+  });
+}
+
+// ═══════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════
+function renderDashboard(){
+  updateStats();
+  const today=todayStr();
+  const overdue=DB.reminders.filter(r=>r.date<today).length;
+  const todayFU=DB.reminders.filter(r=>r.date===today).length;
+  const alertEl=document.getElementById('dashAlert');
+  if(overdue>0)alertEl.innerHTML=`<div class="dash-alert"><div class="dash-alert-title">⚠️ ${overdue} Overdue Follow-up${overdue>1?'s':''}</div><div class="dash-alert-sub">Act now!</div></div>`;
+  else if(todayFU>0)alertEl.innerHTML=`<div class="dash-alert"><div class="dash-alert-title">📅 ${todayFU} Follow-up${todayFU>1?'s':''} Today</div><div class="dash-alert-sub">Stay on top of your pipeline!</div></div>`;
+  else alertEl.innerHTML=`<div class="dash-alert" style="background:linear-gradient(135deg,var(--green),#20c97a)"><div class="dash-alert-title">✅ All caught up!</div><div class="dash-alert-sub">No pending follow-ups today.</div></div>`;
+  document.getElementById('dashFollowups').innerHTML=DB.reminders.filter(r=>r.date<=today).slice(0,3).map(r=>reminderCardHTML(r)).join('')||`<div class="empty"><div class="emo">🎉</div><p>No follow-ups today!</p></div>`;
+  const recent=[...DB.visits].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  document.getElementById('dashRecent').innerHTML=recent.length?recent.map(v=>{const c=DB.clients.find(x=>x.id===v.clientId);return`<div class="reminder-card" onclick="openJourney(${v.clientId})"><div class="reminder-icon upcoming">🏠</div><div class="reminder-body"><div class="reminder-name">${c?c.name:'Unknown'}</div><div class="reminder-note">${v.properties.length} unit${v.properties.length>1?'s':''} shown</div><div class="reminder-time upcoming">${fmtDate(v.date)}</div></div></div>`;}).join(''):`<div class="empty"><div class="emo">📋</div><p>No visits logged yet</p></div>`;
+}
+function showHeatClients(heat){switchTab('clients');setTimeout(()=>{const chips=document.querySelectorAll('#clientFilters .fchip');chips.forEach(c=>c.classList.remove('active'));const idx=heat==='hot'?4:heat==='warm'?5:6;if(chips[idx])chips[idx].classList.add('active');renderClients(heat);},50);}
+
+// ═══════════════════════════════════════
+// REMINDERS
+// ═══════════════════════════════════════
+function reminderCardHTML(r){
+  const today=todayStr();
+  const urg=r.date<today?'overdue':(r.date===today?'today':'upcoming');
+  const icons={overdue:'⚠️',today:'🔔',upcoming:'📅'};
+  const labels={overdue:'Overdue',today:'Today',upcoming:fmtDate(r.date)};
+  return`<div class="reminder-card ${urg}"><div class="reminder-icon ${urg}">${icons[urg]}</div><div class="reminder-body"><div class="reminder-name">${r.clientName}</div><div class="reminder-note">${r.note}</div><div class="reminder-time ${urg}">${labels[urg]} ${r.time?'· '+fmtTime(r.time):''}</div><div class="reminder-actions"><button class="r-btn done" onclick="event.stopPropagation();doneReminder(${r.id})">✅ Done</button><button class="r-btn wa" onclick="event.stopPropagation();waOpen('${r.clientName}')">💬 WA</button><button class="r-btn snooze" onclick="event.stopPropagation();snoozeReminder(${r.id})">⏰ Snooze</button><button class="r-btn edit" onclick="event.stopPropagation();addReminderToCalendar(${r.id})">📆 Google</button>${urg!=='upcoming'?`<button class="r-btn edit" onclick="event.stopPropagation();openModal('rescheduleReminder',{reminderId:${r.id}})">📅 Reschedule</button>`:''}<button class="r-btn edit" onclick="event.stopPropagation();openModal('editReminder',{reminderId:${r.id}})">✏️ Edit</button></div></div></div>`;
+}
+function renderReminders(){const el=document.getElementById('reminderList');const s=[...DB.reminders].sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));el.innerHTML=s.length?s.map(r=>reminderCardHTML(r)).join(''):`<div class="empty"><div class="emo">🔔</div><p>No reminders set.</p></div>`;}
+function doneReminder(id){DB.reminders=DB.reminders.filter(r=>r.id!==id);save();renderReminders();renderDashboard();showToast('Done! ✅');}
+function snoozeReminder(id){const r=DB.reminders.find(x=>x.id===id);if(!r)return;const d=new Date(r.date+'T00:00:00');d.setDate(d.getDate()+1);r.date=d.toISOString().split('T')[0];save();renderReminders();renderDashboard();showToast('Snoozed ⏰');}
+function waOpen(n){const c=DB.clients.find(x=>x.name===n||x.phone===n);const p=c?c.phone.replace(/\D/g,''):n.replace(/\D/g,'');window.open(`https://wa.me/91${p}`,'_blank');}
+function calDateTime(date,time){return (date||todayStr()).replace(/-/g,'')+'T'+(time||'10:00').replace(':','')+'00';}
+function calendarLinks(r){
+  const start=calDateTime(r.date,r.time);
+  const endD=new Date(`${r.date||todayStr()}T${r.time||'10:00'}:00`);endD.setMinutes(endD.getMinutes()+30);
+  const end=endD.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  const title=`PropDesk: ${r.clientName||'Reminder'}`;
+  const details=r.note||'Follow up';
+  const ics=`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART:${start}\nDTEND:${end}\nDESCRIPTION:${details}\nEND:VEVENT\nEND:VCALENDAR`;
+  return{google:`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&details=${encodeURIComponent(details)}`,ics:`data:text/calendar;charset=utf8,${encodeURIComponent(ics)}`};
+}
+function addReminderToCalendar(id){const r=DB.reminders.find(x=>x.id===id);if(r)window.open(calendarLinks(r).google,'_blank');}
+
+function requestNotificationAccess(){
+  if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();
+}
+function reminderDueNow(r){
+  const now=new Date();const due=new Date(`${r.date}T${r.time||'00:00'}:00`);
+  return due<=now;
+}
+function checkDueReminders(){
+  if(!('Notification'in window)||Notification.permission!=='granted')return;
+  DB.reminders.forEach(r=>{
+    const key=`${r.id}-${r.date}-${r.time||''}`;
+    if(reminderDueNow(r)&&r.notifiedKey!==key){
+      new Notification(`PropDesk Reminder: ${r.clientName}`,{body:r.note||'Follow up due'});
+      r.notifiedKey=key;lsSave();renderReminders();renderDashboard();
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// CLIENTS
+// ═══════════════════════════════════════
+function getInsight(cid){
+  const visits=DB.visits.filter(v=>v.clientId===cid);
+  if(!visits.length)return'💡 No visits yet — schedule first site visit';
+  const ap=visits.flatMap(v=>v.properties);
+  const liked=ap.filter(p=>p.reaction==='liked').length;
+  const exp=ap.filter(p=>p.reaction==='expensive').length;
+  const total=ap.length;
+  const last=[...visits].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const days=Math.floor((new Date()-new Date(last.date+'T00:00:00'))/86400000);
+  if(days>14)return`🥶 No visit in ${days} days — follow up now!`;
+  if(exp>=2)return`💸 Keeps finding options too expensive`;
+  if(liked>=2)return`🔥 Liked ${liked} units — push for decision!`;
+  if(total>=6&&liked===0)return`🤔 Seen ${total} units, none liked — revisit requirements`;
+  return`📊 ${total} unit${total>1?'s':''} shown across ${visits.length} visit${visits.length>1?'s':''}`;
+}
+function renderClients(filter){
+  filter=filter||clientFilter;clientFilter=filter;
+  const el=document.getElementById('clientList');
+  let list=DB.clients;
+  if(filter==='buy')list=list.filter(c=>c.mode!=='sell'&&c.mode!=='renovation');
+  else if(filter==='sell')list=list.filter(c=>c.mode==='sell');
+  else if(filter==='renovation')list=list.filter(c=>c.mode==='renovation'||c.type==='Renovation/Construction');
+  else if(['hot','warm','cold'].includes(filter))list=list.filter(c=>c.heat===filter);
+  else if(filter!=='all')list=list.filter(c=>c.stage===filter);
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="emo">👥</div><p>No clients found.</p></div>`;return;}
+  const hL={hot:'🔥 Hot',warm:'🌤 Warm',cold:'❄️ Cold'};
+  const sC={'New Lead':'s-new','Site Visit Scheduled':'s-visit','Negotiation':'s-neg'};
+  el.innerHTML=list.map(c=>{
+    const vc=DB.visits.filter(v=>v.clientId===c.id).length;
+    const isSell=c.mode==='sell';
+    const sb=isSell?DB.buildings.find(b=>b.ownerId===c.id):null;
+    const isReno=c.mode==='renovation'||c.type==='Renovation/Construction';
+    const sellerVc=DB.sellerVisits.filter(v=>v.clientId===c.id).length;
+    const plan=(c.nextVisitPlan||[]);
+    return`<div class="client-card">
+      <div class="cc-top" onclick="openJourney(${c.id})">
+        <div class="cc-left"><div class="cc-avatar" style="background:${c.color}18;color:${c.color}">${c.name.charAt(0)}</div><div><div class="cc-name">${c.name}</div><div class="cc-phone">${c.phone}</div></div></div>
+        <div class="cc-right"><div class="heat-badge ${c.heat}">${hL[c.heat]||'❄️'}</div><div class="stage-badge ${isSell?'s-sell':sC[c.stage]||'s-new'}">${isSell?'🏷 Seller':c.stage}</div></div>
+      </div>
+      <div class="cc-info"><div class="cc-pill">💰 <b>${c.budget||'—'}</b></div><div class="cc-pill">📍 <b>${c.location}</b></div>${isReno?`<div class="cc-pill">🏗️ <b>Renovation</b></div>`:''}${!isSell?`<div class="cc-pill">🏠 <b>${vc} visit${vc!==1?'s':''}</b></div>`:`<div class="cc-pill">👣 <b>${sellerVc} site visit${sellerVc!==1?'s':''}</b></div>`}${sb?`<div class="cc-pill">🏠 <b>${sb.name}</b></div>`:''}</div>
+      ${isReno&&c.scope?`<div class="scope-box">🏗️ Scope: ${c.scope}</div>`:''}
+      ${plan.length?`<div class="next-plan-box">📍 Next Visit Plan: ${plan.map(p=>p.propName).join(', ')}</div>`:''}
+      ${!isSell?`<div class="cc-insight" onclick="openJourney(${c.id})">${getInsight(c.id)}</div>`:''}
+      <div class="cc-actions">
+        <button class="cc-btn wa" onclick="waOpen('${c.phone}')">💬 WA</button>
+        ${!isSell?`<button class="cc-btn visit" onclick="openModal('visit',{clientId:${c.id}})">📋 Visit</button>`:''}
+        <button class="cc-btn journey" onclick="openJourney(${c.id})">🗺 Journey</button>
+        ${isSell&&sb?`<button class="cc-btn journey" onclick="openBuilding(${sb.id})">🏠 Property</button>`:''}
+        <button class="cc-btn edit" onclick="openModal('editClient',{clientId:${c.id}})">✏️ Edit</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterClients(f,el){document.querySelectorAll('#clientFilters .fchip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderClients(f);}
+
+// ═══════════════════════════════════════
+// JOURNEY
+// ═══════════════════════════════════════
+function openJourney(cid){
+  currentJourneyClientId=cid;
+  const c=DB.clients.find(x=>x.id===cid);if(!c)return;
+  document.getElementById('jName').textContent=c.name;
+  document.getElementById('jSub').textContent=`${c.phone} · Budget: ${c.budget||'—'}`;
+  document.getElementById('jHeatBadge').innerHTML=`<div class="heat-badge ${c.heat}">${{hot:'🔥 Hot',warm:'🌤 Warm',cold:'❄️ Cold'}[c.heat]}</div>`;
+  const isSell=c.mode==='sell';
+  document.getElementById('jLogVisitBtn').textContent=isSell?'+ Log Site Visit':'+ Log New Visit';
+  document.getElementById('jLogVisitBtn').onclick=()=>isSell?openModal('sellerVisit',{clientId:cid}):openModal('visit',{clientId:cid});
+  document.getElementById('jPlanVisitBtn').style.display=isSell?'none':'block';
+  document.getElementById('jPlanVisitBtn').onclick=()=>openModal('planVisit',{clientId:cid});
+  const visits=DB.visits.filter(v=>v.clientId===cid).sort((a,b)=>a.date.localeCompare(b.date));
+  const sellerVisits=DB.sellerVisits.filter(v=>v.clientId===cid).sort((a,b)=>a.date.localeCompare(b.date));
+  const reminders=DB.reminders.filter(r=>r.clientId===cid);
+  const ap=visits.flatMap(v=>v.properties);
+  const liked=ap.filter(p=>p.reaction==='liked');
+  const plan=c.nextVisitPlan||[];
+  const sellerBuilding=DB.buildings.find(b=>b.ownerId===cid);
+  document.getElementById('journeyInsight').innerHTML=`<div class="ji-title">Journey Insights</div>
+    ${isSell?`<div class="ji-item">👣 <span><b>${sellerVisits.length}</b> site visit${sellerVisits.length!==1?'s':''} logged${sellerBuilding?' · '+sellerBuilding.name:''}</span></div>`:`<div class="ji-item">📊 <span><b>${visits.length}</b> visit${visits.length!==1?'s':''} · <b>${ap.length}</b> units shown</span></div>`}
+    ${c.type==='Renovation/Construction'&&c.scope?`<div class="ji-item">🏗️ <span><b>Scope:</b> ${c.scope}</span></div>`:''}
+    ${liked.length?`<div class="ji-item">👍 <span>Liked: <b>${liked.map(p=>p.propName).join(', ')}</b></span></div>`:''}
+    ${plan.length&&!isSell?`<div class="ji-item">📍 <span><b>Next Visit Plan:</b> ${plan.map(p=>p.propName).join(', ')}</span></div><button class="r-btn wa" style="margin-top:8px" onclick="shareNextVisitPlanWA(${cid})">💬 Share Plan on WhatsApp</button>`:''}
+    ${reminders.length?`<div class="ji-item">🔔 <span><b>${reminders.length}</b> reminder${reminders.length>1?'s':''} set</span></div>`:''}
+    ${!isSell?`<div class="ji-item">💡 <span>${getInsight(cid)}</span></div>`:''}`;
+  const rxL={liked:'👍 Liked',consider:'🤔 Under Consideration',expensive:'💸 Too Expensive',location:'📍 Wrong Location',size:'📐 Size Issue',no:'👎 Not Interested'};
+  const rxC={liked:'rx-liked',consider:'rx-consider',expensive:'rx-expensive',location:'rx-location',size:'rx-size',no:'rx-no'};
+  const tl=[...visits.map(v=>({date:v.date,type:'visit',data:v})),...sellerVisits.map(v=>({date:v.date,type:'sellerVisit',data:v})),...reminders.map(r=>({date:r.date,type:'reminder',data:r})),...(plan.length&&!isSell?[{date:todayStr(),type:'plan',data:plan}]:[])].sort((a,b)=>a.date.localeCompare(b.date));
+  let vn=0;
+  document.getElementById('journeyTimeline').innerHTML=tl.length?tl.map((item,i)=>{
+    const last=i===tl.length-1;
+    if(item.type==='visit'){vn++;const v=item.data;return`<div class="tl-item"><div class="tl-line"><div class="tl-dot"></div>${!last?'<div class="tl-connector"></div>':''}</div><div class="tl-card"><div class="tl-date">Visit ${vn} · ${fmtDate(v.date)}</div>${v.properties.map(p=>`<div class="tl-prop"><div class="tl-prop-name">${p.propName}</div><span class="tl-prop-reaction ${rxC[p.reaction]||'rx-no'}">${rxL[p.reaction]||p.reaction}</span></div>`).join('')}${v.note?`<div class="tl-note">📝 ${v.note}</div>`:''}</div></div>`;}
+    if(item.type==='sellerVisit'){vn++;const v=item.data;return`<div class="tl-item"><div class="tl-line"><div class="tl-dot"></div>${!last?'<div class="tl-connector"></div>':''}</div><div class="tl-card"><div class="tl-date">Site Visit ${vn} · ${fmtDate(v.date)}</div><div class="tl-prop"><div class="tl-prop-name">${v.visitor||'Site visitor'}</div>${v.outcome?`<span class="tl-prop-reaction rx-consider">${v.outcome}</span>`:''}</div>${v.note?`<div class="tl-note">📝 ${v.note}</div>`:''}</div></div>`;}
+    if(item.type==='plan'){return`<div class="tl-item"><div class="tl-line"><div class="tl-dot reminder-dot"></div>${!last?'<div class="tl-connector"></div>':''}</div><div class="tl-card reminder-card-tl"><div class="tl-date reminder-date">📍 Next Visit Plan</div>${item.data.map(p=>`<div class="tl-prop"><div class="tl-prop-name">${p.propName}</div></div>`).join('')}</div></div>`;}
+    const r=item.data;const today=todayStr();const urg=r.date<today?'🔴 Overdue':r.date===today?'🟡 Today':'🔵 Upcoming';
+    return`<div class="tl-item"><div class="tl-line"><div class="tl-dot reminder-dot"></div>${!last?'<div class="tl-connector"></div>':''}</div><div class="tl-card reminder-card-tl"><div class="tl-date reminder-date">🔔 ${fmtDate(r.date)} ${r.time?'· '+fmtTime(r.time):''}</div><div style="font-size:13px;font-weight:600">${r.note}</div><div style="font-size:11px;color:var(--blue);margin-top:4px;font-weight:700">${urg}</div></div></div>`;
+  }).join(''):`<div class="empty"><div class="emo">🗺</div><p>No visits yet.</p></div>`;
+  document.getElementById('journeyPage').classList.add('open');
+}
+function closeJourney(){currentJourneyClientId=null;document.getElementById('journeyPage').classList.remove('open');}
+
+// ═══════════════════════════════════════
+// INVENTORY
+// ═══════════════════════════════════════
+function setInvFilter(type,val,el){
+  const map={cat:'catFilters',listing:'listingFilters',floor:'floorFilters',status:'statusFilters',loc:'locFilters'};
+  document.querySelectorAll(`#${map[type]} .fchip`).forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');invFilters[type]=val;renderInventory();
+}
+function buildLocationChips(){
+  const areas=knownLocations();
+  document.getElementById('locFilters').innerHTML=`<div class="fchip ${invFilters.loc==='all'?'active':''}" onclick="setInvFilter('loc','all',this)">All Areas</div>`+areas.map(a=>`<div class="fchip ${invFilters.loc===a?'active':''}" onclick="setInvFilter('loc','${a}',this)">${a}</div>`).join('');
+}
+function renderInventory(){
+  buildLocationChips();
+  const el=document.getElementById('propertyList');
+  let blds=DB.buildings;
+  if(invFilters.cat!=='all')blds=blds.filter(b=>b.category===invFilters.cat);
+  if(invFilters.listing!=='all')blds=blds.filter(b=>b.listing===invFilters.listing);
+  if(invFilters.loc!=='all')blds=blds.filter(b=>(b.area||b.location)===invFilters.loc);
+  const filtered=blds.map(b=>{
+    let floors=b.floors;
+    if(invFilters.floor!=='all')floors=floors.filter(f=>f.label.toLowerCase().includes(invFilters.floor.toLowerCase()));
+    if(invFilters.status!=='all')floors=floors.filter(f=>f.status===invFilters.status);
+    return{...b,floors};
+  }).filter(b=>b.floors.length>0);
+  if(!filtered.length){el.innerHTML=`<div class="empty"><div class="emo">🏠</div><p>No properties match filters.</p></div>`;return;}
+  const cC={Apartment:'cat-apartment','Builder Floor':'cat-builder',Commercial:'cat-commercial','Affordable Housing':'cat-affordable',Villa:'cat-villa',Plot:'cat-plot'};
+  el.innerHTML=filtered.map(b=>{
+    const avail=b.floors.filter(f=>f.status==='Available').length;
+    const photos=(b.photos||[]).filter(Boolean);
+    const owner=b.ownerId?DB.clients.find(c=>c.id===b.ownerId):null;
+    const photoHtml=photos.length?`<div class="bld-photos">${photos.map(p=>`<img class="bld-photo" src="${p}">`).join('')}</div>`:'';
+    const mapHtml=b.mapUrl?`<a class="bld-maplink" href="${b.mapUrl}" target="_blank" onclick="event.stopPropagation()"><span>📍</span><span>Open in Google Maps</span></a>`:'';
+    const tiles=b.floors.map(f=>`<div class="floor-tile ${ftCls(f.status)}" onclick="event.stopPropagation();openBuilding(${b.id})"><div class="ft-status-dot"></div><div class="ft-label">${f.label}</div><div class="ft-price">₹${f.price}</div>${f.size?`<div class="ft-size">${f.size}</div>`:''}${f.facing?`<div class="ft-size">🧭 ${f.facing}</div>`:''}</div>`).join('');
+    return`<div class="bld-card"><div class="bld-header" onclick="openBuilding(${b.id})"><div style="flex:1"><div class="bld-name">${b.name}</div><div class="bld-loc">📍 ${b.location}${b.area?' · '+b.area:''}${b.facing?' · 🧭 '+b.facing:''}</div>${owner?`<div style="margin-top:4px;font-size:11px;color:var(--purple);font-weight:700">🏷 ${owner.name}</div>`:''}<div style="margin-top:5px;font-size:11px;color:var(--green);font-weight:700">${avail} of ${b.floors.length} available</div></div><div class="bld-right"><div class="cat-badge ${cC[b.category]||'cat-apartment'}">${b.category}</div><div class="listing-badge ${b.listing==='Sell'?'listing-sell':'listing-rent'}">${b.listing==='Sell'?'💰 Sale':'🔑 Rent'}</div></div></div>${photoHtml}${mapHtml}<div class="floors-grid">${tiles}</div></div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// BUILDING DETAIL
+// ═══════════════════════════════════════
+function openBuilding(id){
+  currentBuildingId=id;
+  const b=DB.buildings.find(x=>x.id===id);if(!b)return;
+  document.getElementById('bdName').textContent=b.name;
+  document.getElementById('bdLoc').textContent=b.location;
+  const avail=b.floors.filter(f=>f.status==='Available').length;
+  const sold=b.floors.filter(f=>f.status==='Sold'||f.status==='Rented').length;
+  const owner=b.ownerId?DB.clients.find(c=>c.id===b.ownerId):null;
+  document.getElementById('bdHero').innerHTML=`<div class="bdh-name">${b.name}</div><div class="bdh-loc">📍 ${b.location}${b.area?' · '+b.area:''}${b.facing?' · 🧭 '+b.facing:''}</div>${owner?`<div style="margin-top:6px;font-size:12px;background:rgba(255,255,255,0.2);display:inline-block;padding:3px 12px;border-radius:20px;font-weight:700">🏷 ${owner.name} · ${owner.phone}</div>`:''}<div class="bdh-badges"><div class="bdh-badge">${b.category}</div><div class="bdh-badge">${b.listing==='Sell'?'💰 For Sale':'🔑 For Rent'}</div>${b.driveUrl?`<div class="bdh-badge">🔗 Drive Link</div>`:''}</div><div class="bdh-stats"><div class="bdh-stat"><div class="bdh-stat-num">${b.floors.length}</div><div class="bdh-stat-lbl">Total</div></div><div class="bdh-stat" style="background:rgba(22,160,106,0.25)"><div class="bdh-stat-num">${avail}</div><div class="bdh-stat-lbl">Available</div></div><div class="bdh-stat" style="background:rgba(224,53,53,0.25)"><div class="bdh-stat-num">${sold}</div><div class="bdh-stat-lbl">Sold/Rented</div></div></div>`;
+  const photos=(b.photos||[]).filter(Boolean);
+  document.getElementById('bdPhotos').innerHTML=photos.map(p=>`<img class="detail-photo" src="${p}">`).join('');
+  document.getElementById('bdMapLink').innerHTML=`${b.mapUrl?`<a class="detail-maplink" href="${b.mapUrl}" target="_blank"><span>📍</span><span>Open in Google Maps</span></a>`:''}${b.driveUrl?`<a class="detail-maplink" href="${b.driveUrl}" target="_blank"><span>🔗</span><span>Open Google Drive Photos</span></a>`:''}`;
+  document.getElementById('bdActions').innerHTML=`<button class="detail-action-btn da-wa" onclick="sharePropertyWA(${b.id})">💬 Share</button><button class="detail-action-btn da-edit" onclick="openModal('editProperty',{buildingId:${b.id}})">✏️ Edit</button><button class="detail-action-btn da-del" onclick="deleteBuilding(${b.id})">🗑 Delete</button>`;
+  document.getElementById('bdFloors').innerHTML=b.floors.map(f=>`<div class="floor-card"><div class="fc-top"><div class="fc-floor">${f.label}</div><div class="fc-price">₹${f.price}</div></div><div class="fc-details">${f.size?`<div class="fc-detail">📐 ${f.size}</div>`:''}<div class="fc-detail" style="background:${f.status==='Available'?'var(--greenbg)':f.status==='On Hold'?'var(--amberbg)':f.status==='Rented'?'var(--bluebg)':'var(--redbg)'};color:${f.status==='Available'?'var(--green)':f.status==='On Hold'?'var(--amber)':f.status==='Rented'?'var(--blue)':'var(--red)'}">${f.status}</div></div>${f.note?`<div class="fc-note">📝 ${f.note}</div>`:''}<div class="fc-status-row"><button class="fc-status-btn cycle" onclick="cycleFloorStatus(${b.id},'${f.label}',true)">🔄 Status</button><button class="fc-status-btn del" onclick="deleteFloor(${b.id},'${f.label}')">🗑 Remove</button></div></div>`).join('');
+  document.getElementById('buildingPage').classList.add('open');
+}
+function closeBuilding(){currentBuildingId=null;document.getElementById('buildingPage').classList.remove('open');renderInventory();}
+function cycleFloorStatus(bId,fl,reopen){const b=DB.buildings.find(x=>x.id===bId);const f=b&&b.floors.find(x=>x.label===fl);if(!f)return;const c=['Available','On Hold','Sold','Rented'];f.status=c[(c.indexOf(f.status)+1)%c.length];save();if(reopen)openBuilding(bId);else renderInventory();showToast(`${fl}: ${f.status}`);}
+function deleteFloor(bId,fl){if(!confirm(`Remove ${fl}?`))return;const b=DB.buildings.find(x=>x.id===bId);if(!b)return;b.floors=b.floors.filter(f=>f.label!==fl);if(!b.floors.length){DB.buildings=DB.buildings.filter(x=>x.id!==bId);closeBuilding();}else openBuilding(bId);save();updateStats();}
+function deleteBuilding(id){if(!confirm('Delete this property?'))return;DB.buildings=DB.buildings.filter(b=>b.id!==id);save();closeBuilding();updateStats();}
+function sharePropertyWA(id){const b=DB.buildings.find(x=>x.id===id);if(!b)return;const avail=b.floors.filter(f=>f.status==='Available');let msg=`🏠 *${b.name}*\n📍 ${b.location}${b.area?' · '+b.area:''}${b.facing?' · Facing: '+b.facing:''}\n${b.category} | ${b.listing==='Sell'?'For Sale':'For Rent'}\n\n${avail.map(f=>`✅ ${f.label} — ₹${f.price}${f.size?' | '+f.size:''}${f.facing?' | Facing: '+f.facing:''}`).join('\n')}${b.mapUrl?'\n\n📍 '+b.mapUrl:''}${b.driveUrl?'\n🔗 Photos: '+b.driveUrl:''}\n\n_K.D Constructions_`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');}
+
+// ═══════════════════════════════════════
+// WA SHARE
+// ═══════════════════════════════════════
+function openWAShare(){
+  const c=document.getElementById('modalContent');
+  // Get unique locations/areas from buildings (same as inventory filter does)
+  const areas=[...new Set(DB.buildings.map(b=>b.area||b.location).filter(Boolean))].sort();
+  const locChips=`<div class="wa-chip active" onclick="setWAFilter('loc','all',this)">All Areas</div>`+
+    areas.map(a=>`<div class="wa-chip" onclick="setWAFilter('loc','${a}',this)">📍 ${a}</div>`).join('');
+  c.innerHTML=`<div class="modal-title">📤 Share Inventory</div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <div class="wa-filter-row" id="waCatFilter">
+        <div class="wa-chip active" onclick="setWAFilter('cat','all',this)">All</div>
+        <div class="wa-chip" onclick="setWAFilter('cat','Apartment',this)">🏢 Apartment</div>
+        <div class="wa-chip" onclick="setWAFilter('cat','Builder Floor',this)">🏠 Builder Floor</div>
+        <div class="wa-chip" onclick="setWAFilter('cat','Villa',this)">🏡 Villa</div>
+        <div class="wa-chip" onclick="setWAFilter('cat','Plot',this)">🟫 Plot</div>
+        <div class="wa-chip" onclick="setWAFilter('cat','Commercial',this)">🏪 Commercial</div>
+        <div class="wa-chip" onclick="setWAFilter('cat','Affordable Housing',this)">💚 Affordable</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Listing Type</label>
+      <div class="wa-filter-row" id="waListingFilter">
+        <div class="wa-chip active" onclick="setWAFilter('listing','all',this)">All</div>
+        <div class="wa-chip" onclick="setWAFilter('listing','Sell',this)">💰 For Sale</div>
+        <div class="wa-chip" onclick="setWAFilter('listing','Rent',this)">🔑 For Rent</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Location / Area</label>
+      <div class="wa-filter-row" id="waLocFilter">${locChips}</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Floor</label>
+      <div class="wa-filter-row" id="waFloorFilter">
+        <div class="wa-chip active" onclick="setWAFilter('floor','all',this)">All Floors</div>
+        <div class="wa-chip" onclick="setWAFilter('floor','Ground',this)">Ground</div>
+        <div class="wa-chip" onclick="setWAFilter('floor','1st',this)">1st</div>
+        <div class="wa-chip" onclick="setWAFilter('floor','2nd',this)">2nd</div>
+        <div class="wa-chip" onclick="setWAFilter('floor','3rd',this)">3rd</div>
+        <div class="wa-chip" onclick="setWAFilter('floor','4th',this)">4th</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <div class="wa-filter-row" id="waStatusFilter">
+        <div class="wa-chip" onclick="setWAFilter('status','all',this)">All</div>
+        <div class="wa-chip active" onclick="setWAFilter('status','Available',this)">✅ Available</div>
+        <div class="wa-chip" onclick="setWAFilter('status','On Hold',this)">⏳ On Hold</div>
+        <div class="wa-chip" onclick="setWAFilter('status','Sold',this)">🔴 Sold</div>
+        <div class="wa-chip" onclick="setWAFilter('status','Rented',this)">🔑 Rented</div>
+      </div>
+    </div>
+    <div class="form-label" style="margin-bottom:6px">Preview</div>
+    <div class="wa-preview" id="waPreview"></div>
+    <button class="wa-send-btn" onclick="sendWAInventory()">💬 Send on WhatsApp</button>
+    <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  waFilterCat='all';waFilterStatus='Available';waFilterListing='all';waFilterFloor='all';waFilterLoc='all';
+  updateWAPreview();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function setWAFilter(t,v,el){
+  const containers={cat:'#waCatFilter',status:'#waStatusFilter',listing:'#waListingFilter',floor:'#waFloorFilter',loc:'#waLocFilter'};
+  document.querySelectorAll(containers[t]+' .wa-chip').forEach(c=>c.classList.remove('active'));
+  if(t==='cat')waFilterCat=v;
+  else if(t==='status')waFilterStatus=v;
+  else if(t==='listing')waFilterListing=v;
+  else if(t==='floor')waFilterFloor=v;
+  else if(t==='loc')waFilterLoc=v;
+  el.classList.add('active');
+  updateWAPreview();
+}
+
+function buildWAText(){
+  let b=DB.buildings;
+  // Apply building-level filters
+  if(waFilterCat!=='all')b=b.filter(x=>x.category===waFilterCat);
+  if(waFilterListing!=='all')b=b.filter(x=>x.listing===waFilterListing);
+  if(waFilterLoc!=='all')b=b.filter(x=>(x.area||x.location)===waFilterLoc);
+  let m=`🏢 *K.D Constructions — Inventory*\n${'─'.repeat(28)}\n\n`;
+  let anyFound=false;
+  b.forEach(x=>{
+    let f=x.floors;
+    // Apply floor-level filters
+    if(waFilterStatus!=='all')f=f.filter(y=>y.status===waFilterStatus);
+    if(waFilterFloor!=='all')f=f.filter(y=>(y.label||'').toLowerCase().includes(waFilterFloor.toLowerCase()));
+    if(!f.length)return;
+    anyFound=true;
+    m+=`🏠 *${x.name}*\n📍 ${x.location}${x.area?' · '+x.area:''}${x.facing?' | Facing: '+x.facing:''} | ${x.category} | ${x.listing==='Rent'?'🔑 For Rent':'💰 For Sale'}\n`;
+    f.forEach(y=>{
+      const ic=y.status==='Available'?'✅':y.status==='On Hold'?'⏳':y.status==='Rented'?'🔑':'🔴';
+      m+=`${ic} ${y.label} — ₹${y.price}${y.size?' | '+y.size:''}${y.note?' · '+y.note:''}\n`;
+    });
+    if(x.mapUrl)m+=`📍 ${x.mapUrl}\n`;
+    if(x.driveUrl)m+=`🔗 Photos: ${x.driveUrl}\n`;
+    m+='\n';
+  });
+  if(!anyFound)m+=`_No properties match the selected filters._\n\n`;
+  return m+`_For enquiries, contact K.D Constructions_`;
+}
+function updateWAPreview(){const el=document.getElementById('waPreview');if(el)el.textContent=buildWAText();}
+function sendWAInventory(){window.open(`https://wa.me/?text=${encodeURIComponent(buildWAText())}`,'_blank');closeModal();}
+
+// ═══════════════════════════════════════
+// PLANNER - Fixed arrows
+// ═══════════════════════════════════════
+function renderPlanner(){
+  updateStats();
+  const d=new Date(currentPlannerDate+'T00:00:00');
+  const isToday=currentPlannerDate===todayStr();
+  const tasks=DB.tasks[currentPlannerDate]||[];
+  const done=tasks.filter(t=>t.done).length;const total=tasks.length;const pct=total?Math.round((done/total)*100):0;
+  document.getElementById('plannerHdr').innerHTML=`<div class="planner-date-title">${isToday?'📅 Today — ':'📅 '}${d.toLocaleDateString('en-IN',{weekday:'long'})}</div><div class="planner-date-sub">${d.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div><div class="progress-text">${done}/${total} done · ${pct===100&&total>0?'🎉 All done!':pct>50?'💪 More than halfway!':'Keep going!'}</div>`;
+  document.getElementById('plannerNavDate').textContent=isToday?'Today':d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  document.getElementById('taskDateInput').value=currentPlannerDate;
+  document.getElementById('taskListHdr').textContent=isToday?"Today's Tasks":`Tasks for ${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`;
+  const el=document.getElementById('taskList');
+  if(!tasks.length){el.innerHTML=`<div class="empty"><div class="emo">✅</div><p>No tasks. Add one above!</p></div>`;}
+  else{
+    const p=tasks.filter(t=>!t.done);const comp=tasks.filter(t=>t.done);
+    el.innerHTML=[...p,...comp].map(t=>`<div class="task-item ${t.done?'done-task':''}"><div class="task-check ${t.done?'checked':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div><div style="flex:1"><div class="task-text">${t.text}</div><span class="task-tag ${t.tag||'manual'}">${t.tag==='crm'?'CRM':'Manual'}</span></div><button class="task-del" onclick="deleteTask(${t.id})">✕</button></div>`).join('');
+  }
+  document.getElementById('journalText').value=DB.journal[currentPlannerDate]||'';
+}
+
+function shiftPlannerDate(delta){
+  const parts=currentPlannerDate.split('-');
+  const d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+  d.setDate(d.getDate()+delta);
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  currentPlannerDate=`${y}-${m}-${day}`;
+  renderPlanner();
+}
+function goToToday(){currentPlannerDate=todayStr();renderPlanner();}
+function addTask(){
+  const inp=document.getElementById('taskInput');
+  const text=inp.value.trim();if(!text)return;
+  const td=document.getElementById('taskDateInput').value||currentPlannerDate;
+  if(!DB.tasks[td])DB.tasks[td]=[];
+  const id=Date.now();
+  DB.tasks[td].push({id,text,done:false,tag:'manual'});
+  if(document.getElementById('taskReminderCheck')?.checked){
+    DB.reminders.push({id:id+1,clientId:null,clientName:'Task Reminder',date:td,time:document.getElementById('taskReminderTime').value||'10:00',note:text,urgency:td<todayStr()?'overdue':td===todayStr()?'today':'upcoming',taskId:id});
+    document.getElementById('taskReminderCheck').checked=false;
+  }
+  inp.value='';currentPlannerDate=td;
+  save();renderPlanner();renderReminders();renderDashboard();
+  if(td!==todayStr())showToast(`Task added for ${fmtDate(td)} 📅`);
+}
+function toggleTask(id){const t=(DB.tasks[currentPlannerDate]||[]).find(x=>x.id===id);if(t)t.done=!t.done;save();renderPlanner();}
+function deleteTask(id){DB.tasks[currentPlannerDate]=(DB.tasks[currentPlannerDate]||[]).filter(t=>t.id!==id);save();renderPlanner();}
+function clearDone(){DB.tasks[currentPlannerDate]=(DB.tasks[currentPlannerDate]||[]).filter(t=>!t.done);save();renderPlanner();showToast('Cleared');}
+function carryForward(){const tm=tomorrowStr();const p=(DB.tasks[currentPlannerDate]||[]).filter(t=>!t.done);if(!p.length){showToast('No pending tasks');return;}if(!DB.tasks[tm])DB.tasks[tm]=[];p.forEach(t=>DB.tasks[tm].push({...t,id:Date.now()+Math.random()}));save();showToast(`${p.length} task${p.length>1?'s':''} carried ⏭`);}
+function saveJournal(){DB.journal[currentPlannerDate]=document.getElementById('journalText').value;save();showToast('Notes saved 💾');}
+
+// ═══════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════
+function openModal(type,prefill={}){
+  const overlay=document.getElementById('modalOverlay');
+  const content=document.getElementById('modalContent');
+  visitSelectedProps={};floorCount=1;photoSlots=[null,null,null];
+
+  if(type==='clientType'){
+    clientMode='buy';
+    content.innerHTML=`<div class="modal-title">👤 Add Client</div>
+      <div class="form-group"><label class="form-label">Client Type</label><div class="buysell-toggle"><button class="buysell-btn active-buy" id="btn_buy" onclick="setClientMode('buy')">🛒 Buyer</button><button class="buysell-btn" id="btn_sell" onclick="setClientMode('sell')">🏷 Seller</button><button class="buysell-btn" id="btn_renovation" onclick="setClientMode('renovation')">🏗 Renovation</button></div></div>
+      <div id="buyerFields">
+        <div class="form-row"><div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="cl_name" placeholder="Name"></div><div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="cl_phone" type="tel" placeholder="98XXXXXXXX"></div></div>
+        <div class="form-group"><label class="form-label">Temperature</label><div class="heat-sel"><div class="heat-sel-btn" id="hs_hot" onclick="selectHeat('hot')">🔥 Hot</div><div class="heat-sel-btn sel-warm" id="hs_warm" onclick="selectHeat('warm')">🌤 Warm</div><div class="heat-sel-btn" id="hs_cold" onclick="selectHeat('cold')">❄️ Cold</div></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Stage</label><select class="form-select" id="cl_stage"><option>New Lead</option><option>Site Visit Scheduled</option><option>Negotiation</option></select></div><div class="form-group"><label class="form-label">Budget</label><input class="form-input" id="cl_budget" placeholder="85L"></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Looking For</label><select class="form-select" id="cl_type" onchange="toggleScopeField('cl')"><option>Apartment</option><option>Builder Floor</option><option>Villa</option><option>Plot</option><option>Commercial</option><option>Affordable Housing</option><option>Renovation/Construction</option></select></div><div class="form-group"><label class="form-label">Location</label><input class="form-input" id="cl_loc" placeholder="Sushant Lok"></div></div>
+        <div class="form-group hidden" id="cl_scope_wrap"><label class="form-label">Scope of Work</label><textarea class="form-textarea" id="cl_scope" placeholder="Civil work, interiors, electrical, plumbing..."></textarea></div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="cl_note" placeholder="Requirements..."></textarea></div>
+      </div>
+      <div id="sellerFields" style="display:none">
+        <div class="form-row"><div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="sl_name" placeholder="Name"></div><div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="sl_phone" type="tel" placeholder="98XXXXXXXX"></div></div>
+        <div class="form-group"><label class="form-label">Temperature</label><div class="heat-sel"><div class="heat-sel-btn" id="shs_hot" onclick="selectHeat('hot')">🔥 Hot</div><div class="heat-sel-btn sel-warm" id="shs_warm" onclick="selectHeat('warm')">🌤 Warm</div><div class="heat-sel-btn" id="shs_cold" onclick="selectHeat('cold')">❄️ Cold</div></div></div>
+        <div class="form-group"><label class="form-label">Expected Price</label><input class="form-input" id="sl_budget" placeholder="1.2Cr"></div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="sl_note" placeholder="Seller notes..."></textarea></div>
+        <div class="divider"></div>
+        <div class="sell-section-title">🏠 Property Details</div>
+        <div class="form-group"><label class="form-label">Building Name</label><input class="form-input" id="sl_pr_name" placeholder="B-215 Sushant Lok-3"></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">City</label><input class="form-input" id="sl_pr_loc" placeholder="Gurugram"></div><div class="form-group"><label class="form-label">Area</label>${locationSelectHTML('sl_pr')}</div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Category</label><select class="form-select" id="sl_pr_cat"><option>Builder Floor</option><option>Apartment</option><option>Villa</option><option>Plot</option><option>Commercial</option><option>Affordable Housing</option></select></div><div class="form-group"><label class="form-label">Listing</label><select class="form-select" id="sl_pr_listing"><option>Sell</option><option>Rent</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Facing</label><input class="form-input" id="sl_pr_facing" placeholder="North East"></div><div class="form-group"><label class="form-label">Google Drive Link</label><input class="form-input" id="sl_pr_drive" placeholder="https://drive.google.com/..."></div></div>
+      <div class="form-group"><label class="form-label">Google Maps URL</label><input class="form-input" id="sl_pr_map" placeholder="https://maps.google.com/?q=..."></div>
+        <div class="form-group"><label class="form-label">Floors</label><div id="floorBuilder" class="floor-builder"></div><button class="add-floor-btn" onclick="addFloorRow()">+ Add Floor</button></div>
+      </div>
+      <div id="renovationFields" style="display:none">
+        <div class="form-row"><div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="rv_name" placeholder="Name"></div><div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="rv_phone" type="tel" placeholder="98XXXXXXXX"></div></div>
+        <div class="form-group"><label class="form-label">Temperature</label><div class="heat-sel"><div class="heat-sel-btn" id="rhs_hot" onclick="selectHeat('hot')">🔥 Hot</div><div class="heat-sel-btn sel-warm" id="rhs_warm" onclick="selectHeat('warm')">🌤 Warm</div><div class="heat-sel-btn" id="rhs_cold" onclick="selectHeat('cold')">❄️ Cold</div></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Estimated Budget</label><input class="form-input" id="rv_budget" placeholder="18L"></div><div class="form-group"><label class="form-label">Stage</label><select class="form-select" id="rv_stage"><option>New Lead</option><option>Site Visit Scheduled</option><option>Negotiation</option></select></div></div>
+        <div class="form-group"><label class="form-label">Site Address</label><input class="form-input" id="rv_address" placeholder="House / floor / landmark"></div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="rv_loc" placeholder="Sushant Lok-1"></div>
+        <div class="form-group"><label class="form-label">Scope of Work</label><textarea class="form-textarea" id="rv_scope" style="height:95px" placeholder="Civil, modular kitchen, bathrooms, electrical, paint..."></textarea></div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="rv_note" placeholder="Timelines, preferences, measurements pending..."></textarea></div>
+      </div>
+      <button class="submit-btn" id="clientSubmitBtn" onclick="saveClientByMode()">Save Buyer</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+    addFloorRow();
+  }
+  else if(type==='editClient'){
+    const c=DB.clients.find(x=>x.id===prefill.clientId);if(!c)return;
+    selectedHeat=c.heat||'warm';
+    content.innerHTML=`<div class="modal-title">✏️ Edit Client</div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="cl_name" value="${c.name||''}"></div><div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="cl_phone" value="${c.phone||''}"></div></div>
+      <div class="form-group"><label class="form-label">Temperature</label><div class="heat-sel"><div class="heat-sel-btn ${c.heat==='hot'?'sel-hot':''}" id="hs_hot" onclick="selectHeat('hot')">🔥 Hot</div><div class="heat-sel-btn ${c.heat==='warm'?'sel-warm':''}" id="hs_warm" onclick="selectHeat('warm')">🌤 Warm</div><div class="heat-sel-btn ${c.heat==='cold'?'sel-cold':''}" id="hs_cold" onclick="selectHeat('cold')">❄️ Cold</div></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Stage</label><select class="form-select" id="cl_stage">${['New Lead','Site Visit Scheduled','Negotiation'].map(s=>`<option ${c.stage===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">Budget</label><input class="form-input" id="cl_budget" value="${c.budget||''}"></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Looking For</label><select class="form-select" id="cl_type" onchange="toggleScopeField('cl')">${['Apartment','Builder Floor','Villa','Plot','Commercial','Affordable Housing','Renovation/Construction'].map(t=>`<option ${c.type===t?'selected':''}>${t}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">Location</label><input class="form-input" id="cl_loc" value="${c.location||''}"></div></div>
+      <div class="form-group ${c.type==='Renovation/Construction'?'':'hidden'}" id="cl_scope_wrap"><label class="form-label">Scope of Work</label><textarea class="form-textarea" id="cl_scope">${c.scope||''}</textarea></div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="cl_note">${c.note||''}</textarea></div>
+      <button class="submit-btn" onclick="saveEditClient(${c.id})">Update</button>
+      <button class="cancel-btn" style="background:var(--redbg);color:var(--red);border-color:var(--redborder)" onclick="deleteClient(${c.id})">🗑 Delete</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='property'){
+    content.innerHTML=`<div class="modal-title">🏠 Add Property</div>
+      <div class="form-group"><label class="form-label">Building Name</label><input class="form-input" id="pr_name" placeholder="B-215 Sushant Lok-3"></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">City</label><input class="form-input" id="pr_loc" placeholder="Gurugram"></div><div class="form-group"><label class="form-label">Area</label>${locationSelectHTML('pr')}</div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Category</label><select class="form-select" id="pr_cat"><option>Builder Floor</option><option>Apartment</option><option>Villa</option><option>Plot</option><option>Commercial</option><option>Affordable Housing</option></select></div><div class="form-group"><label class="form-label">Listing</label><select class="form-select" id="pr_listing"><option>Sell</option><option>Rent</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Facing</label><input class="form-input" id="pr_facing" placeholder="North East"></div><div class="form-group"><label class="form-label">Google Drive Link</label><input class="form-input" id="pr_drive" placeholder="https://drive.google.com/..."></div></div>
+      <div class="form-group"><label class="form-label">Google Maps URL</label><input class="form-input" id="pr_map" placeholder="https://maps.google.com/?q=..."></div>
+      <div class="form-group"><label class="form-label">Photos (up to 3)</label><div class="photo-upload-row"><div class="photo-slot" id="slot_0"><div class="photo-slot-icon">📷</div><div class="photo-slot-lbl">Photo 1</div><input type="file" accept="image/*" onchange="handlePhoto(event,0)"></div><div class="photo-slot" id="slot_1"><div class="photo-slot-icon">📷</div><div class="photo-slot-lbl">Photo 2</div><input type="file" accept="image/*" onchange="handlePhoto(event,1)"></div><div class="photo-slot" id="slot_2"><div class="photo-slot-icon">📷</div><div class="photo-slot-lbl">Photo 3</div><input type="file" accept="image/*" onchange="handlePhoto(event,2)"></div></div></div>
+      <div class="form-group"><label class="form-label">Floors</label><div id="floorBuilder" class="floor-builder"></div><button class="add-floor-btn" onclick="addFloorRow()">+ Add Floor</button></div>
+      <button class="submit-btn" onclick="saveProperty()">Save Property</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+    addFloorRow();
+  }
+  else if(type==='editProperty'){
+    const b=DB.buildings.find(x=>x.id===prefill.buildingId);if(!b)return;
+    content.innerHTML=`<div class="modal-title">✏️ Edit Property</div>
+      <div class="form-group"><label class="form-label">Building Name</label><input class="form-input" id="ep_name" value="${b.name}"></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">City</label><input class="form-input" id="ep_loc" value="${b.location}"></div><div class="form-group"><label class="form-label">Area</label>${locationSelectHTML('ep',b.area||'')}</div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Category</label><select class="form-select" id="ep_cat">${['Builder Floor','Apartment','Villa','Plot','Commercial','Affordable Housing'].map(t=>`<option ${b.category===t?'selected':''}>${t}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">Listing</label><select class="form-select" id="ep_listing"><option ${b.listing==='Sell'?'selected':''}>Sell</option><option ${b.listing==='Rent'?'selected':''}>Rent</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Facing</label><input class="form-input" id="ep_facing" value="${b.facing||''}"></div><div class="form-group"><label class="form-label">Google Drive Link</label><input class="form-input" id="ep_drive" value="${b.driveUrl||''}"></div></div>
+      <div class="form-group"><label class="form-label">Google Maps URL</label><input class="form-input" id="ep_map" value="${b.mapUrl||''}"></div>
+      <div class="form-group"><label class="form-label">Floors</label>${b.floors.map((f,i)=>`<div style="background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;"><div style="font-weight:700;font-size:12px;color:var(--accent);margin-bottom:8px">${f.label}</div><div class="form-row"><div class="form-group"><label class="form-label">Price</label><input class="form-input" id="ef_price_${i}" value="${f.price}"></div><div class="form-group"><label class="form-label">Size</label><input class="form-input" id="ef_size_${i}" value="${f.size||''}"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Status</label><select class="form-select" id="ef_status_${i}">${['Available','On Hold','Sold','Rented'].map(s=>`<option ${f.status===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="ef_note_${i}" value="${f.note||''}"></div></div></div>`).join('')}</div>
+      <button class="submit-btn" onclick="saveEditProperty(${b.id},${b.floors.length})">Update</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='visit'){
+    const cid=prefill.clientId;const client=DB.clients.find(x=>x.id===cid);
+    const allUnits=DB.buildings.flatMap(b=>b.floors.map(f=>({id:`${b.id}-${f.label}`,name:`${b.name} · ${f.label}`,loc:b.location})));
+    content.innerHTML=`<div class="modal-title">📋 Log Visit${client?' — '+client.name:''}</div>
+      <div class="form-group"><label class="form-label">Visit Date</label><input type="date" class="form-input" id="vi_date" value="${todayStr()}"></div>
+      <div class="form-group"><label class="form-label">Units Shown</label>${allUnits.length?`<div class="prop-selector">${allUnits.map(u=>`<div class="prop-sel-item" id="psi_${u.id.replace(/[^a-z0-9]/gi,'_')}" onclick="togglePropSel('${u.id}','${u.name.replace(/'/g,"\\'")}')"><div><div class="prop-sel-name">${u.name}</div><div class="prop-sel-loc">📍 ${u.loc}</div></div><div class="prop-sel-check" id="psc_${u.id.replace(/[^a-z0-9]/gi,'_')}"></div></div>`).join('')}</div>`:'<p style="color:var(--muted);font-size:13px">No inventory yet.</p>'}</div>
+      <div id="reactionForms"></div>
+      <div class="form-group"><label class="form-label">Visit Notes</label><textarea class="form-textarea" id="vi_note" placeholder="Client feedback..."></textarea></div>
+      <div class="form-group"><label class="form-label">Next Follow-up</label><div class="form-row"><div class="form-group"><input type="date" class="form-input" id="vi_fudate" value="${tomorrowStr()}"></div><div class="form-group"><input type="time" class="form-input" id="vi_futime" value="10:00"></div></div><input class="form-input" id="vi_funote" placeholder="Follow-up note..." style="margin-top:8px"></div>
+      <button class="submit-btn" onclick="saveVisit(${cid})">Save Visit</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='sellerVisit'){
+    const cid=prefill.clientId;const client=DB.clients.find(x=>x.id===cid);const b=DB.buildings.find(x=>x.ownerId===cid);
+    content.innerHTML=`<div class="modal-title">👣 Log Seller Site Visit${client?' — '+client.name:''}</div>
+      <div class="form-group"><label class="form-label">Property</label><input class="form-input" value="${b?b.name:'Seller property'}" disabled></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Visit Date</label><input type="date" class="form-input" id="sv_date" value="${todayStr()}"></div><div class="form-group"><label class="form-label">Visitor / Client</label><input class="form-input" id="sv_visitor" placeholder="Who visited?"></div></div>
+      <div class="form-group"><label class="form-label">Outcome</label><select class="form-select" id="sv_outcome"><option>Interested</option><option>Follow-up Needed</option><option>Price Issue</option><option>Location Issue</option><option>Not Interested</option></select></div>
+      <div class="form-group"><label class="form-label">Visit Notes</label><textarea class="form-textarea" id="sv_note" placeholder="Feedback, quoted price, next action..."></textarea></div>
+      <button class="submit-btn" onclick="saveSellerVisit(${cid})">Save Site Visit</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='reminder'){
+    const cOpts=DB.clients.map(c=>`<option value="${c.id}" data-name="${c.name}" ${prefill.clientId==c.id?'selected':''}>${c.name}</option>`).join('');
+    content.innerHTML=`<div class="modal-title">🔔 Set Reminder</div>
+      <div class="form-group"><label class="form-label">Client</label><select class="form-select" id="rm_client">${cOpts}</select></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="rm_date" value="${todayStr()}"></div><div class="form-group"><label class="form-label">Time</label><input type="time" class="form-input" id="rm_time" value="10:00"></div></div>
+      <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="rm_note" placeholder="What to follow up on..."></textarea></div>
+      <button class="submit-btn" onclick="saveReminder()">Save Reminder</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='rescheduleReminder'){
+    const r=DB.reminders.find(x=>x.id===prefill.reminderId);if(!r)return;
+    content.innerHTML=`<div class="modal-title">📅 Reschedule Reminder</div>
+      <div class="form-group"><label class="form-label">Client</label><input class="form-input" value="${r.clientName||''}" disabled></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">New Date</label><input type="date" class="form-input" id="rs_date" value="${tomorrowStr()}"></div><div class="form-group"><label class="form-label">Time</label><input type="time" class="form-input" id="rs_time" value="${r.time||'10:00'}"></div></div>
+      <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="rs_note">${r.note||''}</textarea></div>
+      <button class="submit-btn" onclick="saveReschedule(${r.id})">Reschedule</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='planVisit'){
+    const cid=prefill.clientId;const c=DB.clients.find(x=>x.id===cid);if(!c)return;
+    const plan=c.nextVisitPlan||[];
+    const allUnits=DB.buildings.flatMap(b=>b.floors.map(f=>({id:`${b.id}-${f.label}`,name:`${b.name} · ${f.label}`,loc:b.area||b.location})));
+    visitSelectedProps={};plan.forEach(p=>visitSelectedProps[p.propId]={propId:p.propId,propName:p.propName});
+    content.innerHTML=`<div class="modal-title">📍 Next Visit Plan${c?' — '+c.name:''}</div>
+      <div class="form-group"><label class="form-label">Select Properties</label>${allUnits.length?`<div class="prop-selector">${allUnits.map(u=>{const sid=u.id.replace(/[^a-z0-9]/gi,'_');const selected=!!visitSelectedProps[u.id];return`<div class="prop-sel-item ${selected?'selected':''}" id="psi_${sid}" onclick="togglePlanPropSel('${u.id}','${u.name.replace(/'/g,"\\'")}')"><div><div class="prop-sel-name">${u.name}</div><div class="prop-sel-loc">📍 ${u.loc}</div></div><div class="prop-sel-check" id="psc_${sid}">${selected?'✓':''}</div></div>`;}).join('')}</div>`:'<p style="color:var(--muted);font-size:13px">No inventory yet.</p>'}</div>
+      <button class="submit-btn" onclick="saveNextVisitPlan(${cid})">Save Plan</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='site'){
+    content.innerHTML=`<div class="modal-title">🏗️ Add Ongoing Site</div>
+      <div class="form-group"><label class="form-label">Site Name</label><input class="form-input" id="site_name" placeholder="Khanna Residence Renovation"></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Client</label><input class="form-input" id="site_client" placeholder="Client name"></div><div class="form-group"><label class="form-label">Location</label><input class="form-input" id="site_loc" placeholder="Sushant Lok-1"></div></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="site_status"><option>In Progress</option><option>Material Ordered</option><option>Finishing</option><option>On Hold</option></select></div>
+      <button class="submit-btn" onclick="saveSite()">Save Site</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='siteEntry'){
+    const site=DB.ongoingSites.find(s=>s.id===prefill.siteId);if(!site)return;
+    const cats=siteOptions('category');
+    const vendors=siteOptions('paidTo');
+    const catOptions=cats.map(x=>`<option value="${x}">${x}</option>`).join('');
+    const vendorOptions=vendors.map(x=>`<option value="${x}">${x}</option>`).join('');
+    content.innerHTML=`<div class="modal-title">${prefill.kind==='expenses'?'💸 Add Expense':'💰 Add Payment'}</div>
+      <div class="form-group"><label class="form-label">Site</label><input class="form-input" value="${site.name}" disabled></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="se_date" value="${todayStr()}"></div><div class="form-group"><label class="form-label">Amount</label><input type="number" class="form-input" id="se_amount" placeholder="25000"></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Category / Work Type</label><select class="form-select" id="se_category_mode" onchange="toggleSiteNew('category')"><option value="">Select</option>${catOptions}<option value="__new">+ Add New</option></select><input class="form-input" id="se_category_new" placeholder="Plumber, Electrician, Tiles..." style="margin-top:8px"></div><div class="form-group"><label class="form-label">Paid To</label><select class="form-select" id="se_paidTo_mode" onchange="toggleSiteNew('paidTo')"><option value="">Select</option>${vendorOptions}<option value="__new">+ Add New</option></select><input class="form-input" id="se_paidTo_new" placeholder="Raju plumber, supplier..." style="margin-top:8px"></div></div>
+      <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="se_note" placeholder="Material, labour, advance..."></textarea></div>
+      <button class="submit-btn" onclick="saveSiteEntry(${site.id},'${prefill.kind}')">Save</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  else if(type==='editReminder'){
+    const r=DB.reminders.find(x=>x.id===prefill.reminderId);if(!r)return;
+    const cOpts=DB.clients.map(c=>`<option value="${c.id}" data-name="${c.name}" ${r.clientId==c.id?'selected':''}>${c.name}</option>`).join('');
+    content.innerHTML=`<div class="modal-title">✏️ Edit Reminder</div>
+      <div class="form-group"><label class="form-label">Client</label><select class="form-select" id="rm_client">${cOpts}</select></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="rm_date" value="${r.date}"></div><div class="form-group"><label class="form-label">Time</label><input type="time" class="form-input" id="rm_time" value="${r.time||'10:00'}"></div></div>
+      <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="rm_note">${r.note||''}</textarea></div>
+      <button class="submit-btn" onclick="saveEditReminder(${r.id})">Update</button>
+      <button class="cancel-btn" style="background:var(--redbg);color:var(--red);border-color:var(--redborder)" onclick="doneReminder(${r.id});closeModal()">🗑 Delete</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>`;
+  }
+  overlay.classList.add('open');
+}
+
+function setClientMode(mode){
+  clientMode=mode;
+  document.getElementById('btn_buy').className='buysell-btn'+(mode==='buy'?' active-buy':'');
+  document.getElementById('btn_sell').className='buysell-btn'+(mode==='sell'?' active-sell':'');
+  document.getElementById('btn_renovation').className='buysell-btn'+(mode==='renovation'?' active-buy':'');
+  document.getElementById('buyerFields').style.display=mode==='buy'?'block':'none';
+  document.getElementById('sellerFields').style.display=mode==='sell'?'block':'none';
+  document.getElementById('renovationFields').style.display=mode==='renovation'?'block':'none';
+  document.getElementById('clientSubmitBtn').textContent=mode==='buy'?'Save Buyer':mode==='sell'?'Save Seller + Add to Inventory':'Save Renovation Client';
+}
+function saveClientByMode(){if(clientMode==='buy')saveClient();else if(clientMode==='sell')saveSeller();else saveRenovationClient();}
+function toggleScopeField(prefix){
+  const type=document.getElementById(prefix+'_type');const wrap=document.getElementById(prefix+'_scope_wrap');
+  if(wrap&&type)wrap.classList.toggle('hidden',type.value!=='Renovation/Construction');
+}
+
+function saveSeller(){
+  const name=document.getElementById('sl_name').value.trim();if(!name){alert('Enter name');return;}
+  const prName=document.getElementById('sl_pr_name').value.trim();if(!prName){alert('Enter property name');return;}
+  const cols=['#7040d0','#f05a00','#2b6ef0','#16a06a','#e09000','#e03535'];
+  const cid=Date.now();
+  DB.clients.push({id:cid,name,phone:document.getElementById('sl_phone').value,stage:'Seller',heat:selectedHeat,budget:document.getElementById('sl_budget').value,type:'Seller',location:document.getElementById('sl_pr_loc').value,note:document.getElementById('sl_note').value,color:cols[DB.clients.length%cols.length],mode:'sell'});
+  const floors=[];
+  for(let i=1;i<floorCount;i++){const label=document.getElementById(`fl_label_${i}`)?.value;const price=document.getElementById(`fl_price_${i}`)?.value;if(!label||!price)continue;floors.push({label,price,size:document.getElementById(`fl_size_${i}`).value,status:document.getElementById(`fl_status_${i}`).value,note:document.getElementById(`fl_note_${i}`).value});}
+  if(!floors.length)floors.push({label:'Unit',price:document.getElementById('sl_budget').value||'—',size:'',status:'Available',note:''});
+  DB.buildings.push({id:Date.now()+1,name:prName,location:document.getElementById('sl_pr_loc').value,area:getLocationValue('sl_pr'),category:document.getElementById('sl_pr_cat').value,listing:document.getElementById('sl_pr_listing').value,facing:document.getElementById('sl_pr_facing').value,driveUrl:document.getElementById('sl_pr_drive').value,mapUrl:document.getElementById('sl_pr_map').value,photos:[],ownerId:cid,floors});
+  save();closeModal();renderClients();renderInventory();updateStats();showToast('Seller & property added! 🏷');
+}
+
+function saveRenovationClient(){
+  const name=document.getElementById('rv_name').value.trim();if(!name){alert('Enter name');return;}
+  const cols=['#7040d0','#f05a00','#2b6ef0','#16a06a','#e09000','#e03535'];
+  DB.clients.push({id:Date.now(),name,phone:document.getElementById('rv_phone').value,stage:document.getElementById('rv_stage').value,heat:selectedHeat,budget:document.getElementById('rv_budget').value,type:'Renovation/Construction',scope:document.getElementById('rv_scope').value,address:document.getElementById('rv_address').value,location:normalizeLocationName(document.getElementById('rv_loc').value),note:document.getElementById('rv_note').value,color:cols[DB.clients.length%cols.length],mode:'renovation'});
+  save();closeModal();renderClients();updateStats();showToast('Renovation client added! 🏗️');
+}
+
+function handlePhoto(event,index){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{photoSlots[index]=e.target.result;const slot=document.getElementById('slot_'+index);let img=slot.querySelector('img');if(!img){img=document.createElement('img');slot.appendChild(img);}img.src=e.target.result;slot.querySelector('.photo-slot-icon').style.display='none';slot.querySelector('.photo-slot-lbl').style.display='none';};
+  reader.readAsDataURL(file);
+}
+
+function addFloorRow(){
+  const labels=['Ground Floor','1st Floor','2nd Floor','3rd Floor','4th Floor','Basement'];
+  const div=document.createElement('div');div.className='fb-row';div.id=`fbr_${floorCount}`;
+  div.innerHTML=`<div class="fb-floor-title">Floor ${floorCount}</div><div class="form-row"><div class="form-group"><label class="form-label">Label</label><select class="form-select" id="fl_label_${floorCount}">${labels.map(l=>`<option>${l}</option>`).join('')}<option>Custom</option></select></div><div class="form-group"><label class="form-label">Price</label><input class="form-input" id="fl_price_${floorCount}" placeholder="75L"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Size</label><input class="form-input" id="fl_size_${floorCount}" placeholder="1800 sq.ft"></div><div class="form-group"><label class="form-label">Status</label><select class="form-select" id="fl_status_${floorCount}"><option>Available</option><option>On Hold</option><option>Sold</option><option>Rented</option></select></div></div><div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="fl_note_${floorCount}" placeholder="Key features..."></div>`;
+  document.getElementById('floorBuilder').appendChild(div);
+  const sel=document.getElementById(`fl_label_${floorCount}`);if(floorCount<=labels.length)sel.value=labels[floorCount-1];
+  floorCount++;
+}
+
+function selectHeat(h){
+  selectedHeat=h;
+  ['hot','warm','cold'].forEach(x=>{const el=document.getElementById('hs_'+x);if(el)el.className='heat-sel-btn'+(x===h?' sel-'+h:'');const el2=document.getElementById('shs_'+x);if(el2)el2.className='heat-sel-btn'+(x===h?' sel-'+h:'');const el3=document.getElementById('rhs_'+x);if(el3)el3.className='heat-sel-btn'+(x===h?' sel-'+h:'');});
+}
+function togglePropSel(id,name){
+  const sid=id.replace(/[^a-z0-9]/gi,'_');
+  const item=document.getElementById('psi_'+sid);const check=document.getElementById('psc_'+sid);
+  if(visitSelectedProps[id]){delete visitSelectedProps[id];item.classList.remove('selected');check.textContent='';document.getElementById('rf_'+sid)&&document.getElementById('rf_'+sid).remove();}
+  else{visitSelectedProps[id]={propId:id,propName:name,reaction:'consider'};item.classList.add('selected');check.textContent='✓';const div=document.createElement('div');div.className='form-group';div.id='rf_'+sid;div.innerHTML=`<label class="form-label">Reaction: ${name}</label><div class="reaction-row"><button class="rx-btn" onclick="setRx('${id}','liked',this)">👍 Liked</button><button class="rx-btn active-consider" onclick="setRx('${id}','consider',this)">🤔 Consider</button><button class="rx-btn" onclick="setRx('${id}','expensive',this)">💸 Too Expensive</button><button class="rx-btn" onclick="setRx('${id}','location',this)">📍 Wrong Location</button><button class="rx-btn" onclick="setRx('${id}','size',this)">📐 Size Issue</button><button class="rx-btn" onclick="setRx('${id}','no',this)">👎 Not Interested</button></div>`;document.getElementById('reactionForms').appendChild(div);}
+}
+function setRx(pid,reaction,btn){visitSelectedProps[pid].reaction=reaction;const parent=document.getElementById('rf_'+pid.replace(/[^a-z0-9]/gi,'_')).querySelector('.reaction-row');parent.querySelectorAll('.rx-btn').forEach(b=>b.className='rx-btn');btn.className='rx-btn active-'+reaction;}
+function togglePlanPropSel(id,name){
+  const sid=id.replace(/[^a-z0-9]/gi,'_');
+  const item=document.getElementById('psi_'+sid);const check=document.getElementById('psc_'+sid);
+  if(visitSelectedProps[id]){delete visitSelectedProps[id];item.classList.remove('selected');check.textContent='';}
+  else{visitSelectedProps[id]={propId:id,propName:name};item.classList.add('selected');check.textContent='✓';}
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+
+function saveClient(){
+  const name=document.getElementById('cl_name').value.trim();if(!name){alert('Enter name');return;}
+  const cols=['#f05a00','#2b6ef0','#16a06a','#e09000','#9040d0','#e03535'];
+  const type=document.getElementById('cl_type').value;
+  const isReno=type==='Renovation/Construction';
+  DB.clients.push({id:Date.now(),name,phone:document.getElementById('cl_phone').value,stage:document.getElementById('cl_stage').value,heat:selectedHeat,budget:document.getElementById('cl_budget').value,type,scope:isReno?document.getElementById('cl_scope').value:'',location:document.getElementById('cl_loc').value,note:document.getElementById('cl_note').value,color:cols[DB.clients.length%cols.length],mode:isReno?'renovation':'buy'});
+  save();closeModal();renderClients();updateStats();showToast('Buyer added! 🛒');
+}
+function saveEditClient(id){
+  const c=DB.clients.find(x=>x.id===id);if(!c)return;
+  c.name=document.getElementById('cl_name').value.trim()||c.name;c.phone=document.getElementById('cl_phone').value||c.phone;c.heat=selectedHeat;c.stage=document.getElementById('cl_stage').value;c.budget=document.getElementById('cl_budget').value;c.type=document.getElementById('cl_type').value;c.scope=c.type==='Renovation/Construction'?(document.getElementById('cl_scope')?.value||''):'';if(c.type==='Renovation/Construction'&&c.mode!=='sell')c.mode='renovation';else if(c.mode==='renovation')c.mode='buy';c.location=document.getElementById('cl_loc').value;c.note=document.getElementById('cl_note').value;
+  save();closeModal();renderClients();showToast('Updated ✏️');
+}
+function deleteClient(id){if(!confirm('Delete client?'))return;DB.clients=DB.clients.filter(c=>c.id!==id);save();closeModal();renderClients();updateStats();}
+function saveProperty(){
+  const name=document.getElementById('pr_name').value.trim();if(!name){alert('Enter name');return;}
+  const floors=[];for(let i=1;i<floorCount;i++){const label=document.getElementById(`fl_label_${i}`)?.value;const price=document.getElementById(`fl_price_${i}`)?.value;if(!label||!price)continue;floors.push({label,price,size:document.getElementById(`fl_size_${i}`).value,status:document.getElementById(`fl_status_${i}`).value,note:document.getElementById(`fl_note_${i}`).value});}
+  if(!floors.length){alert('Add at least one floor');return;}
+  DB.buildings.push({id:Date.now(),name,location:document.getElementById('pr_loc').value,area:getLocationValue('pr'),category:document.getElementById('pr_cat').value,listing:document.getElementById('pr_listing').value,facing:document.getElementById('pr_facing').value,driveUrl:document.getElementById('pr_drive').value,mapUrl:document.getElementById('pr_map').value,photos:photoSlots.filter(Boolean),floors,ownerId:null});
+  save();closeModal();renderInventory();updateStats();showToast('Property added! 🏠');
+}
+function saveEditProperty(id,fc){
+  const b=DB.buildings.find(x=>x.id===id);if(!b)return;
+  b.name=document.getElementById('ep_name').value.trim()||b.name;b.location=document.getElementById('ep_loc').value||b.location;b.area=getLocationValue('ep')||b.area;b.category=document.getElementById('ep_cat').value;b.listing=document.getElementById('ep_listing').value;b.facing=document.getElementById('ep_facing').value;b.driveUrl=document.getElementById('ep_drive').value;b.mapUrl=document.getElementById('ep_map').value;
+  for(let i=0;i<fc;i++){if(!b.floors[i])continue;b.floors[i].price=document.getElementById(`ef_price_${i}`)?.value||b.floors[i].price;b.floors[i].size=document.getElementById(`ef_size_${i}`)?.value||b.floors[i].size;b.floors[i].status=document.getElementById(`ef_status_${i}`)?.value||b.floors[i].status;b.floors[i].note=document.getElementById(`ef_note_${i}`)?.value||b.floors[i].note;}
+  save();closeModal();openBuilding(id);renderInventory();showToast('Updated ✏️');
+}
+function saveVisit(cid){
+  const props=Object.values(visitSelectedProps);if(!props.length){alert('Select at least one unit');return;}
+  DB.visits.push({id:Date.now(),clientId:cid,date:document.getElementById('vi_date').value,properties:props,note:document.getElementById('vi_note').value});
+  const fuDate=document.getElementById('vi_fudate').value;const fuNote=document.getElementById('vi_funote').value;
+  const c=DB.clients.find(x=>x.id===cid);
+  if(fuDate&&fuNote){DB.reminders.push({id:Date.now()+1,clientId:cid,clientName:c?c.name:'',date:fuDate,time:document.getElementById('vi_futime').value,note:fuNote,urgency:'upcoming'});if(!DB.tasks[fuDate])DB.tasks[fuDate]=[];DB.tasks[fuDate].push({id:Date.now()+2,text:`Follow up: ${c?c.name:'Client'} — ${fuNote}`,done:false,tag:'crm'});}
+  if(c&&c.stage==='New Lead')c.stage='Site Visit Scheduled';
+  save();closeModal();renderClients();renderDashboard();renderReminders();showToast('Visit logged! 📋');
+  if(currentJourneyClientId===cid)openJourney(cid);
+}
+function saveSellerVisit(cid){
+  DB.sellerVisits.push({id:Date.now(),clientId:cid,date:document.getElementById('sv_date').value,visitor:document.getElementById('sv_visitor').value,outcome:document.getElementById('sv_outcome').value,note:document.getElementById('sv_note').value});
+  save();closeModal();renderClients();showToast('Seller site visit logged 👣');
+  if(currentJourneyClientId===cid)openJourney(cid);
+}
+function saveReminder(){
+  const sel=document.getElementById('rm_client');const cid=parseInt(sel.value);const cname=sel.options[sel.selectedIndex].dataset.name;const date=document.getElementById('rm_date').value;if(!date){alert('Select a date');return;}const today=todayStr();
+  DB.reminders.push({id:Date.now(),clientId:cid,clientName:cname,date,time:document.getElementById('rm_time').value,note:document.getElementById('rm_note').value||'Follow up',urgency:date<today?'overdue':date===today?'today':'upcoming'});
+  save();closeModal();renderReminders();renderDashboard();showToast('Reminder set! 🔔');
+}
+function saveEditReminder(id){
+  const r=DB.reminders.find(x=>x.id===id);if(!r)return;
+  const sel=document.getElementById('rm_client');r.clientId=parseInt(sel.value);r.clientName=sel.options[sel.selectedIndex].dataset.name;r.date=document.getElementById('rm_date').value;r.time=document.getElementById('rm_time').value;r.note=document.getElementById('rm_note').value;const today=todayStr();r.urgency=r.date<today?'overdue':r.date===today?'today':'upcoming';
+  save();closeModal();renderReminders();renderDashboard();showToast('Updated ✏️');
+}
+function saveReschedule(id){
+  const r=DB.reminders.find(x=>x.id===id);if(!r)return;
+  r.date=document.getElementById('rs_date').value;r.time=document.getElementById('rs_time').value;r.note=document.getElementById('rs_note').value;r.notifiedKey='';
+  const today=todayStr();r.urgency=r.date<today?'overdue':r.date===today?'today':'upcoming';
+  save();closeModal();renderReminders();renderDashboard();showToast('Rescheduled 📅');
+}
+function saveNextVisitPlan(cid){
+  const c=DB.clients.find(x=>x.id===cid);if(!c)return;
+  c.nextVisitPlan=Object.values(visitSelectedProps);
+  save();closeModal();renderClients();showToast('Next visit planned 📍');
+  if(currentJourneyClientId===cid)openJourney(cid);
+}
+function shareNextVisitPlanWA(cid){
+  const c=DB.clients.find(x=>x.id===cid);if(!c||!c.nextVisitPlan||!c.nextVisitPlan.length){showToast('No next visit plan');return;}
+  const lines=c.nextVisitPlan.map((p,i)=>{
+    const [bid,label]=String(p.propId).split(/-(.*)/).filter(Boolean);
+    const b=DB.buildings.find(x=>String(x.id)===bid);
+    const f=b&&b.floors.find(x=>x.label===label);
+    return `${i+1}. ${p.propName}${b&&b.area?' | '+b.area:''}${b&&b.facing?' | Facing: '+b.facing:''}${f&&f.price?' | ₹'+f.price:''}${b&&b.mapUrl?'\n   Map: '+b.mapUrl:''}${b&&b.driveUrl?'\n   Photos: '+b.driveUrl:''}`;
+  }).join('\n');
+  const msg=`*Next Visit Plan — ${c.name}*\n\nPlease show these properties:\n${lines}\n\n_K.D Constructions PropDesk_`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ═══════════════════════════════════════
+// ONGOING RENOVATION SITES
+// ═══════════════════════════════════════
+function siteOptions(field){
+  const vals=[];
+  DB.ongoingSites.forEach(s=>(s.expenses||[]).concat(s.payments||[]).forEach(e=>{if(e[field])vals.push(e[field]);}));
+  return [...new Set(vals.map(cleanTitle).filter(Boolean))].sort();
+}
+function siteFilterValue(siteId,field){
+  const el=document.getElementById(`sf_${field}_${siteId}`);
+  return el?el.value:'all';
+}
+function setSiteFilter(siteId){renderSites();}
+function toggleSiteNew(field){
+  const sel=document.getElementById(`se_${field}_mode`);const inp=document.getElementById(`se_${field}_new`);
+  if(!sel||!inp)return;inp.classList.toggle('hidden',sel.value&&sel.value!=='__new');
+}
+function getSiteSelectValue(field){
+  const sel=document.getElementById(`se_${field}_mode`);const inp=document.getElementById(`se_${field}_new`);
+  return cleanTitle(sel&&sel.value&&sel.value!=='__new'?sel.value:(inp?inp.value:''));
+}
+function sumBy(entries,field){
+  const map={};
+  entries.forEach(e=>{const k=cleanTitle(e[field]);if(k)map[k]=(map[k]||0)+Number(e.amount||0);});
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function renderSites(){
+  const el=document.getElementById('siteList');if(!el)return;
+  if(!DB.ongoingSites.length){el.innerHTML=`<div class="empty"><div class="emo">🏗️</div><p>No ongoing renovation sites yet.</p></div>`;return;}
+  el.innerHTML=DB.ongoingSites.map(site=>{
+    const expenses=site.expenses||[];
+    const payments=site.payments||[];
+    const exp=expenses.reduce((a,e)=>a+Number(e.amount||0),0);
+    const pay=(site.payments||[]).reduce((a,e)=>a+Number(e.amount||0),0);
+    const catFilter=siteFilterValue(site.id,'cat');
+    const vendorFilter=siteFilterValue(site.id,'vendor');
+    const cats=[...new Set(expenses.map(e=>cleanTitle(e.category)).filter(Boolean))].sort();
+    const vendors=[...new Set(expenses.map(e=>cleanTitle(e.paidTo)).filter(Boolean))].sort();
+    const visibleExpenses=expenses.filter(e=>(catFilter==='all'||cleanTitle(e.category)===catFilter)&&(vendorFilter==='all'||cleanTitle(e.paidTo)===vendorFilter));
+    const categoryChips=sumBy(expenses,'category').slice(0,4).map(([k,v])=>`<span class="site-chip">${k}: ${money(v)}</span>`).join('');
+    const vendorChips=sumBy(expenses,'paidTo').slice(0,4).map(([k,v])=>`<span class="site-chip">${k}: ${money(v)}</span>`).join('');
+    const filters=`<div class="site-filter-row"><select class="mini-select" id="sf_cat_${site.id}" onchange="setSiteFilter(${site.id})"><option value="all">All Categories</option>${cats.map(c=>`<option value="${c}" ${catFilter===c?'selected':''}>${c}</option>`).join('')}</select><select class="mini-select" id="sf_vendor_${site.id}" onchange="setSiteFilter(${site.id})"><option value="all">All Paid To</option>${vendors.map(v=>`<option value="${v}" ${vendorFilter===v?'selected':''}>${v}</option>`).join('')}</select></div>`;
+    const expenseEntries=visibleExpenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<div class="site-entry"><div><div class="site-entry-note">${e.note||e.category||'Expense'}</div><div class="site-entry-date">${fmtDate(e.date)}${e.category?' · '+cleanTitle(e.category):''}${e.paidTo?' · Paid to '+cleanTitle(e.paidTo):''}</div></div><div class="site-entry-amt">${money(e.amount)}</div></div>`).join('')||`<div style="font-size:12px;color:var(--muted)">No expenses match this filter.</div>`;
+    const paymentEntries=payments.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<div class="site-entry"><div><div class="site-entry-note">${e.note||e.paidTo||'Payment'}</div><div class="site-entry-date">${fmtDate(e.date)}${e.paidTo?' · From '+cleanTitle(e.paidTo):''}</div></div><div class="site-entry-amt">${money(e.amount)}</div></div>`).join('')||`<div style="font-size:12px;color:var(--muted)">No entries yet.</div>`;
+    return`<div class="site-card"><div class="site-top"><div><div class="site-name">${site.name}</div><div class="site-loc">📍 ${site.location||'—'}${site.clientName?' · '+site.clientName:''}</div></div><div class="site-badge">${site.status||'In Progress'}</div></div><div class="site-money"><div class="site-money-box"><div class="site-money-val r">${money(exp)}</div><div class="site-money-lbl">Expenses</div></div><div class="site-money-box"><div class="site-money-val g">${money(pay)}</div><div class="site-money-lbl">Payments</div></div></div>${categoryChips||vendorChips?`<div class="site-summary">${categoryChips}${vendorChips}</div>`:''}${filters}<div class="site-section"><div class="site-section-title">Expenses ${visibleExpenses.length!==expenses.length?`(${money(visibleExpenses.reduce((a,e)=>a+Number(e.amount||0),0))})`:''}</div>${expenseEntries}</div><div class="site-section"><div class="site-section-title">Payments</div>${paymentEntries}</div><div class="site-actions"><button class="site-btn exp" onclick="openModal('siteEntry',{siteId:${site.id},kind:'expenses'})">+ Expense</button><button class="site-btn pay" onclick="openModal('siteEntry',{siteId:${site.id},kind:'payments'})">+ Payment</button></div></div>`;
+  }).join('');
+}
+function saveSite(){
+  const name=document.getElementById('site_name').value.trim();if(!name){alert('Enter site name');return;}
+  DB.ongoingSites.push({id:Date.now(),name,clientName:document.getElementById('site_client').value,location:normalizeLocationName(document.getElementById('site_loc').value),status:document.getElementById('site_status').value,expenses:[],payments:[]});
+  save();closeModal();renderSites();showToast('Site added 🏗️');
+}
+function saveSiteEntry(siteId,kind){
+  const site=DB.ongoingSites.find(s=>s.id===siteId);if(!site)return;
+  if(!site[kind])site[kind]=[];
+  const amount=Number(document.getElementById('se_amount').value||0);if(!amount){alert('Enter amount');return;}
+  site[kind].push({id:Date.now(),date:document.getElementById('se_date').value,amount,category:getSiteSelectValue('category'),paidTo:getSiteSelectValue('paidTo'),note:document.getElementById('se_note').value});
+  save();closeModal();renderSites();showToast('Entry saved');
+}
+
+// ═══════════════════════════════════════
+// UI
+// ═══════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+tab).classList.add('active');
+  document.querySelector('.scroll-area').scrollTop=0;
+  if(tab==='dashboard')renderDashboard();
+  else if(tab==='clients')renderClients();
+  else if(tab==='inventory')renderInventory();
+  else if(tab==='reminders')renderReminders();
+  else if(tab==='planner')renderPlanner();
+  else if(tab==='sites')renderSites();
+}
+
+// ═══════════════════════════════════════
+// EVENT LISTENERS - All buttons use addEventListener
+// ═══════════════════════════════════════
+function attachEventListeners(){
+  // Journey back
+  document.getElementById('journeyBack').addEventListener('click',()=>closeJourney());
+  document.getElementById('jReminderBtn').addEventListener('click',()=>{
+    if(!currentJourneyClientId)return;
+    const c=DB.clients.find(x=>x.id===currentJourneyClientId);
+    closeJourney();openModal('reminder',{clientId:currentJourneyClientId,clientName:c?c.name:''});
+  });
+
+  // Building back
+  document.getElementById('buildingBack').addEventListener('click',()=>closeBuilding());
+
+  // Modal close on outside click
+  document.getElementById('modalOverlay').addEventListener('click',e=>{
+    if(e.target===document.getElementById('modalOverlay'))closeModal();
+  });
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+async function init(){
+  document.getElementById('dateDisplay').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  currentPlannerDate=todayStr();
+  attachEventListeners();
+
+  // Force-save to localStorage the instant app goes to background
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)lsSave();});
+  window.addEventListener('pagehide',()=>lsSave());
+  window.addEventListener('blur',()=>lsSave());
+  requestNotificationAccess();
+
+  // Step 1: Load local data immediately — app is usable right away
+  const hasLocal=lsLoad();
+  showLoading(false);
+  if(hasLocal){seedFeatureDemos();lsSave();renderAll();setSyncDot('synced');}
+  else{seedDemo();lsSave();renderAll();setSyncDot('error');}
+
+  // Step 2: Pull from cloud (fresh data from other devices)
+  await fbPull();
+  seedFeatureDemos();save();renderAll();checkDueReminders();
+
+  // Step 3: Poll every 15 seconds for updates from other devices
+  // (15s = safe on free tier: ~5,760 reads/day per device)
+  setInterval(async()=>{await fbPull();seedFeatureDemos();lsSave();renderAll();checkDueReminders();}, 15000);
+  setInterval(checkDueReminders, 60000);
+}
+
+init();
+</script></body>
+</html>
