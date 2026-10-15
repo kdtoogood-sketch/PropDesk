@@ -1,0 +1,17 @@
+{
+  "name": "PropDesk — K.D. Constructions",
+  "short_name": "PropDesk",
+  "description": "Property inventory, clients and leads for K.D. Constructions",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#f05a00",
+  "icons": [
+    { "src": "propdesk-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "propdesk-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "propdesk-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
