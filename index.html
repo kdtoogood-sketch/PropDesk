@@ -547,6 +547,8 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
 .sal-chk{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--text2);margin:2px 0 12px;}
 .ocr-st{display:none;font-size:12px;line-height:1.5;margin-top:6px;}
 .ocr-fill{background:#FEF9C3!important;border-color:#EAB308!important;}
+.sal-sb{background:var(--greenbg);border:1px solid var(--greenborder);border-radius:12px;padding:9px 11px;margin:0 0 8px;}
+.sal-k.sb{background:#fff;color:var(--green);}
 /* salary */
 .sal-mnav{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
 .sal-mnav button{border:1.5px solid var(--border);background:var(--card);border-radius:10px;padding:6px 12px;font-size:15px;font-weight:700;color:var(--text2);cursor:pointer;}
@@ -4974,6 +4976,54 @@ function toggleMore(force){
 }
 function moreGo(tab){ toggleMore(false); switchTab(tab); }
 
+
+// ══ 🔗 READ-ONLY LINK TO SITEBOOKS' CLEANING REGISTER (sbclean, sbclean_cfg) ══
+// SiteBooks owns this data; this app only reads and shows it (nothing is written back, nothing is copied).
+// Cleanings, caretakers' "Mark paid", and Preeti's own Airbnb-cleaning cash all live there.
+const SBL_BASE='https://firestore.googleapis.com/v1/projects/propdesk-f50e0/databases/(default)/documents/';
+const SBL_CACHE='sb_link_cache';
+let _sbl={cfg:null,list:[],at:0,err:'',busy:null};
+try{ const c=JSON.parse(localStorage.getItem(SBL_CACHE)||'null'); if(c&&Array.isArray(c.list)){ _sbl.cfg=c.cfg||null; _sbl.list=c.list; _sbl.at=c.at||0; } }catch(e){}
+function _sblDec(v){
+  if(!v||'nullValue' in v)return null;
+  if('booleanValue' in v)return v.booleanValue; if('integerValue' in v)return Number(v.integerValue); if('doubleValue' in v)return v.doubleValue; if('stringValue' in v)return v.stringValue;
+  if('arrayValue' in v)return (v.arrayValue.values||[]).map(_sblDec);
+  if('mapValue' in v)return Object.fromEntries(Object.entries(v.mapValue.fields||{}).map(([k,x])=>[k,_sblDec(x)]));
+  return null;
+}
+const _sblObj=d=>{ const o=Object.fromEntries(Object.entries(d.fields||{}).map(([k,v])=>[k,_sblDec(v)])); o.id=d.name.split('/').pop(); return o; };
+// fetch the latest (at most once a minute unless forced); returns true when something changed
+function sbLinkLoad(force){
+  if(_sbl.busy)return _sbl.busy;
+  if(!force&&_sbl.at&&Date.now()-_sbl.at<60000&&!_sbl.err)return Promise.resolve(false);
+  _sbl.busy=(async()=>{
+    try{
+      const list=[]; let tok='';
+      do{ const r=await fetch(SBL_BASE+'sbclean?pageSize=300'+(tok?'&pageToken='+encodeURIComponent(tok):''),{cache:'no-store'});
+        if(r.status===404)break; if(!r.ok)throw Object.assign(new Error('HTTP '+r.status),{status:r.status});
+        const j=await r.json(); (j.documents||[]).forEach(d=>list.push(_sblObj(d))); tok=j.nextPageToken||''; }while(tok);
+      const rc=await fetch(SBL_BASE+'sbclean_cfg/main',{cache:'no-store'});
+      const cfg=rc.ok?_sblObj(await rc.json()):(rc.status===404?null:_sbl.cfg);
+      const before=JSON.stringify([_sbl.cfg,_sbl.list]);
+      _sbl.cfg=cfg; _sbl.list=list; _sbl.at=Date.now(); _sbl.err='';
+      try{ localStorage.setItem(SBL_CACHE,JSON.stringify({cfg,list,at:_sbl.at})); }catch(e){}
+      return JSON.stringify([cfg,list])!==before;
+    }catch(e){ _sbl.err=e&&e.status===403?'rules':'offline'; return false; }
+    finally{ _sbl.busy=null; }
+  })();
+  return _sbl.busy;
+}
+const sbCaretakers=()=>((_sbl.cfg&&_sbl.cfg.caretakers)||[]);
+const sbPartnerName=pid=>{ const p=((_sbl.cfg&&_sbl.cfg.partners)||[]).find(x=>x.id===pid); return p?p.name:(pid||'').replace(/^p_/,'').replace(/^./,c=>c.toUpperCase()); };
+const sbUnitName=id=>{ const u=((_sbl.cfg&&_sbl.cfg.units)||[]).find(x=>x.id===id); return u?u.name:'?'; };
+// one caretaker's month in SiteBooks: cleanings (units × that entry's rate) and what was marked paid for that month
+function sbCareMonth(cid,m){
+  const ent=_sbl.list.filter(e=>e.kind==='clean'&&!e.deleted&&e.by===cid&&String(e.date||'').slice(0,7)===m);
+  let n=0, amt=0; ent.forEach(e=>{ const k=(e.units||[]).length; n+=k; amt+=k*(Number(e.rate)||0); });
+  const pays=_sbl.list.filter(e=>e.kind==='pay'&&!e.deleted&&e.by===cid&&e.month===m);
+  return {n,amt:Math.round(amt*100)/100,paid:pays.reduce((a,p)=>a+(Number(p.amount)||0),0),pays,days:new Set(ent.map(e=>e.date)).size};
+}
+
 // ═══════════════════════════════════════
 // SALARY (Kanwar only) — staff, monthly salary, advances, salary payments, loans, leaves
 // Kept in its own place in the database (pd_salary/main), apart from PropDesk data that other logins download.
@@ -5064,11 +5114,12 @@ function salMonth(s,m){
   const salary=salRate(s,m);
   const cut=SAL.cuts.filter(c=>c.staffId===s.id&&c.month===m).reduce((a,c)=>a+(Number(c.amount)||0),0);
   const E=SAL.earns.filter(e=>e.staffId===s.id&&e.month===m);
-  const extra=E.reduce((a,e)=>a+(Number(e.amount)||0),0);
-  const adv=sum('advance'), sal=sum('salary')+sum('extra'), moved=sum('toLoan');
+  const sb=s.sbCare?sbCareMonth(s.sbCare,m):null;              // Airbnb cleanings + "Mark paid" from SiteBooks (read live)
+  const extra=E.reduce((a,e)=>a+(Number(e.amount)||0),0)+(sb?sb.amt:0);
+  const adv=sum('advance'), sal=sum('salary')+sum('extra')+(sb?sb.paid:0), moved=sum('toLoan');
   const paid=adv+sal-moved, payable=salary+extra-cut;
   const L=SAL.leaves[s.id]||{}; const days=Object.keys(L).filter(d=>d.slice(0,7)===m);
-  return {salary,extra,cut,payable,adv,sal,moved,paid,toPay:payable-paid,absent:days.filter(d=>L[d]==='A').length,leave:days.filter(d=>L[d]==='L').length};
+  return {salary,extra,sb,cut,payable,adv,sal,moved,paid,toPay:payable-paid,absent:days.filter(d=>L[d]==='A').length,leave:days.filter(d=>L[d]==='L').length};
 }
 function salLoan(s){
   const given=SAL.pays.filter(p=>p.staffId===s.id&&(p.kind==='loan'||p.kind==='toLoan')).reduce((a,p)=>a+(Number(p.amount)||0),0);
@@ -5078,7 +5129,10 @@ function salLoan(s){
 function salYearLeaves(s,m){ const y=m.slice(0,4), L=SAL.leaves[s.id]||{}; const d=Object.keys(L).filter(x=>x.slice(0,4)===y); return {absent:d.filter(x=>L[x]==='A').length,leave:d.filter(x=>L[x]==='L').length}; }
 function _salStaffFor(m){ return SAL.staff.filter(s=>!s.archived||SAL.pays.some(p=>p.staffId===s.id&&p.month===m)||SAL.earns.some(e=>e.staffId===s.id&&e.month===m)); }
 const SAL_ET={incentive:'Incentive',sale:'Sale incentive',cleaning:'Airbnb cleaning',work:'Extra work',other:'Other'};
-function salYearExtras(s,m){ const y=m.slice(0,4), t={}; SAL.earns.filter(e=>e.staffId===s.id&&(e.month||'').slice(0,4)===y).forEach(e=>{ t[e.type]=(t[e.type]||0)+(Number(e.amount)||0); }); return t; }
+const SAL_YL={...SAL_ET,sbclean:'Airbnb cleaning (SiteBooks)'};
+function salYearExtras(s,m){ const y=m.slice(0,4), t={}; SAL.earns.filter(e=>e.staffId===s.id&&(e.month||'').slice(0,4)===y).forEach(e=>{ t[e.type]=(t[e.type]||0)+(Number(e.amount)||0); });
+  if(s.sbCare){ for(let k=1;k<=12;k++){ const mm=y+'-'+String(k).padStart(2,'0'); if(mm>m)break; const a=sbCareMonth(s.sbCare,mm).amt; if(a)t.sbclean=(t.sbclean||0)+a; } }
+  return t; }
 function salShift(d){ const [y,mo]=salMo.split('-').map(Number); const x=new Date(y,mo-1+d,1); salMo=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'); renderSalary(); }
 function _salMonthNav(){ return `<div class="sal-mnav"><button onclick="salShift(-1)">‹</button><b>${_sMl(salMo)}</b><button onclick="salShift(1)">›</button>${salMo!==_sMk()?`<button class="sal-now" onclick="salMo=_sMk();renderSalary()">This month</button>`:''}</div>`; }
 function _salLeavesTxt(a,l){ return [a?a+' absent':'',l?l+' leave':''].filter(Boolean).join(' · ')||'no leaves'; }
@@ -5088,7 +5142,8 @@ async function renderSalary(){
   const root=document.getElementById('salaryRoot'); if(!root)return;
   if(!_salIsAdmin()){ root.innerHTML=''; return; }
   if(!salMo)salMo=_sMk();
-  if(!_salLoaded){ root.innerHTML='<div class="sal-empty">Loading salary records…</div>'; await salLoad(); }
+  if(!_salLoaded){ root.innerHTML='<div class="sal-empty">Loading salary records…</div>'; await Promise.all([salLoad(),sbLinkLoad(true)]); }
+  else sbLinkLoad().then(ch=>{ if(ch&&document.getElementById('page-salary').classList.contains('active'))renderSalary(); });
   if(!SAL)SAL=_salEmpty();
   root.innerHTML=salStaff?_salStaffH():_salListH();
   _salHydrate();
@@ -5145,10 +5200,13 @@ function _salStaffH(){
   ${c.toPay<0?`<div class="sal-warn">Advance is ${_sm(-c.toPay)} more than this month's salary. <button class="sal-btn" onclick="salMoveToLoan('${s.id}',${-c.toPay})">Move ${_sm(-c.toPay)} to loan</button></div>`:''}
   <div class="sal-acts"><button class="submit-btn" style="margin:0;flex:1.3" onclick="salPayForm('${s.id}','advance')">+ Advance / payment</button><button class="sal-btn" style="flex:1" onclick="salEarnForm('${s.id}')">+ Extra earning</button></div>
   ${(()=>{ const E=SAL.earns.filter(e=>e.staffId===s.id&&e.month===salMo).sort((a,b)=>(a.date||'').localeCompare(b.date||'')), ye=salYearExtras(s,salMo), yt=Object.values(ye).reduce((a,v)=>a+v,0);
-    if(!E.length&&!yt)return '';
+    if(!E.length&&!yt&&!s.sbCare)return '';
+    const sbH=s.sbCare?`<div class="sal-sb"><div class="sal-nm" style="font-size:14px">🧹 Airbnb cleaning <span class="sal-k sb">from SiteBooks</span></div>
+      <div class="sal-sub">${c.sb.n?c.sb.n+' cleaning'+(c.sb.n>1?'s':'')+' on '+c.sb.days+' day'+(c.sb.days>1?'s':'')+' · <b>'+_sm(c.sb.amt)+'</b>':'No cleanings marked in SiteBooks this month'}${c.sb.paid?' · paid '+_sm(c.sb.paid)+' ('+c.sb.pays.map(p=>_sFd(p.date)).join(', ')+')':c.sb.amt?' · not paid yet in SiteBooks':''}</div>
+      ${_sbl.err?`<div class="sal-sub" style="color:var(--red)">${_sbl.err==='rules'?'SiteBooks cleaning register is not open to this login':'Offline — showing the last copy from SiteBooks'}</div>`:''}</div>`:'';
     return `<div class="sal-card"><div class="sal-ch">Extra earnings — ${_sMl(salMo)} <span>${_sm(c.extra)}</span></div>
-      ${E.map(e=>`<div class="sal-pay">${e.img?`<img class="sal-thumb" data-salimg="${e.img}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onclick="salViewImg('${e.img}')" alt="screenshot">`:''}<div style="flex:1;min-width:0"><div class="sal-nm" style="font-size:14px">+${_sm(e.amount)} <span class="sal-k extra">${SAL_ET[e.type]||e.type}</span></div><div class="sal-sub">${_sFd(e.date)}${e.note?' · '+_se(e.note):''}${e.payId?' · paid now':''}</div></div><button class="sal-x" title="Delete" onclick="salDelEarn('${e.id}')">×</button></div>`).join('')||'<div class="sal-sub" style="padding:4px 2px">None this month.</div>'}
-      ${yt?`<div class="sal-sub" style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><b>${salMo.slice(0,4)} so far:</b> ${Object.entries(ye).map(([k,v])=>(SAL_ET[k]||k)+' '+_sm(v)).join(' · ')} · <b>total ${_sm(yt)}</b></div>`:''}</div>`; })()}
+      ${sbH}${E.map(e=>`<div class="sal-pay">${e.img?`<img class="sal-thumb" data-salimg="${e.img}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onclick="salViewImg('${e.img}')" alt="screenshot">`:''}<div style="flex:1;min-width:0"><div class="sal-nm" style="font-size:14px">+${_sm(e.amount)} <span class="sal-k extra">${SAL_ET[e.type]||e.type}</span></div><div class="sal-sub">${_sFd(e.date)}${e.note?' · '+_se(e.note):''}${e.payId?' · paid now':''}</div></div><button class="sal-x" title="Delete" onclick="salDelEarn('${e.id}')">×</button></div>`).join('')||(s.sbCare?'':'<div class="sal-sub" style="padding:4px 2px">None this month.</div>')}
+      ${yt?`<div class="sal-sub" style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><b>${salMo.slice(0,4)} so far:</b> ${Object.entries(ye).map(([k,v])=>(SAL_YL[k]||k)+' '+_sm(v)).join(' · ')} · <b>total ${_sm(yt)}</b></div>`:''}</div>`; })()}
   <div class="sal-card"><div class="sal-ch">Payments — ${_sMl(salMo)}</div>${P.map(payRow).join('')||'<div class="sal-sub" style="padding:6px 2px">No payments this month.</div>'}</div>
   <div class="sal-card"><div class="sal-ch">Leaves — ${_sMl(salMo)} <span>${_salLeavesTxt(c.absent,c.leave)} · ${salMo.slice(0,4)}: ${yl.absent+yl.leave}</span></div>
     ${cal}<div class="sal-sub" style="margin-top:6px">Tap a day: <b style="color:var(--red)">Absent</b> → <b style="color:var(--amber)">Leave</b> → clear</div></div>
@@ -5160,6 +5218,7 @@ function _salStaffH(){
 // ── forms ──
 function _salModal(h){ const c=document.getElementById('modalContent'); c.innerHTML=h; document.getElementById('modalOverlay').classList.add('open'); }
 function salStaffForm(id){
+  if(!_sbl.at)sbLinkLoad().then(ch=>{ const el=document.getElementById('sf_sb'); if(ch&&el){ const cur=el.value; el.innerHTML='<option value="">— Not linked —</option>'+sbCaretakers().map(c=>`<option value="${_se(c.id)}">${_se(c.name)} (₹${Number(c.rate)||0} a cleaning)</option>`).join(''); el.value=cur; } });
   const s=id?SAL.staff.find(x=>x.id===id):null;
   _salModal(`<div class="modal-title">${s?'✏️ Edit staff':'👤 Add staff'}</div>
     <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="sf_name" value="${s?_se(s.name):''}" placeholder="Staff name"></div>
@@ -5168,6 +5227,8 @@ function salStaffForm(id){
     <div class="form-row"><div class="form-group"><label class="form-label">Monthly salary ₹</label><input class="form-input" id="sf_sal" type="number" inputmode="numeric" value="${s?salRate(s,salMo)||'':''}"></div>
       <div class="form-group"><label class="form-label">${s?'New salary from':'Salary from'}</label><input class="form-input" id="sf_from" type="month" value="${salMo}"></div></div>
     <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="sf_note" value="${s?_se(s.note||''):''}" placeholder="Optional"></div>
+    <div class="form-group"><label class="form-label">Cleans Airbnb? Link to SiteBooks</label><select class="form-select" id="sf_sb"><option value="">— Not linked —</option>${sbCaretakers().map(c=>`<option value="${_se(c.id)}" ${s&&s.sbCare===c.id?'selected':''}>${_se(c.name)} (₹${Number(c.rate)||0} a cleaning)</option>`).join('')}</select>
+      <div class="sal-sub" style="margin-top:4px">${sbCaretakers().length?'Their cleanings and "Mark paid" in SiteBooks then show in their salary automatically.':(_sbl.err?'Could not read SiteBooks right now.':'No caretakers found in SiteBooks yet.')}</div></div>
     <button class="submit-btn" onclick="salStaffSave(${s?`'${s.id}'`:'null'})">Save</button>
     ${s?`<button class="cancel-btn" style="color:var(--red)" onclick="salStaffArchive('${s.id}',${!s.archived})">${s.archived?'Bring back to the list':'Remove from list (records kept)'}</button>`:''}
     <button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
@@ -5181,7 +5242,7 @@ async function salStaffSave(id){
   const ok=await salSave(d=>{
     let s=d.staff.find(x=>x.id===nid);
     if(!s){ s={id:nid,rates:[],at:new Date().toISOString()}; d.staff.push(s); }
-    s.name=name; s.phone=v('sf_phone'); s.joined=v('sf_join'); s.note=v('sf_note');
+    s.name=name; s.phone=v('sf_phone'); s.joined=v('sf_join'); s.note=v('sf_note'); { const sb=(document.getElementById('sf_sb')||{}).value||''; if(sb)s.sbCare=sb; else delete s.sbCare; }
     s.rates=(s.rates||[]).filter(r=>r.from!==from); if(salRate(s,from)!==amt||!s.rates.length)s.rates.push({from,amount:amt});
   },id?'✅ Saved':'✅ Staff added');
   if(ok){ closeModal(); if(!id){ salStaff=nid; renderSalary(); } }
