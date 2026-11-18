@@ -530,6 +530,59 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
 .sync-row:last-child{border-bottom:none;}
 .sync-row b{color:var(--text);}
 .sync-status-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px;}
+
+/* bottom bar: 4 tabs + More (like RentDesk) */
+.more-sheet{display:none;position:fixed;top:0;left:0;right:0;bottom:var(--nav-h);z-index:350;background:rgba(28,29,46,0.35);max-width:480px;margin:0 auto;}
+.more-sheet.open{display:block;}
+.more-panel{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:20px 20px 0 0;padding:14px 14px 16px;box-shadow:0 -6px 24px rgba(28,29,46,0.12);}
+.more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.more-it{display:flex;align-items:center;gap:10px;padding:14px 12px;border:1.5px solid var(--border);border-radius:14px;background:var(--card2);font-weight:700;font-size:14px;color:var(--text);cursor:pointer;}
+.more-it span{font-size:20px;}
+.more-it.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent);}
+/* salary */
+.sal-mnav{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
+.sal-mnav button{border:1.5px solid var(--border);background:var(--card);border-radius:10px;padding:6px 12px;font-size:15px;font-weight:700;color:var(--text2);cursor:pointer;}
+.sal-mnav b{font-size:15px;min-width:86px;text-align:center;}
+.sal-mnav .sal-now{font-size:12px;margin-left:auto;}
+.sal-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px;}
+.sal-tiles>div{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:10px 12px;}
+.sal-tiles span{display:block;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.sal-tiles b{font-size:18px;font-weight:900;}
+.sal-tiles em{display:block;font-style:normal;font-size:11px;color:var(--red);font-weight:700;}
+.sal-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;}
+.sal-row>div:first-child{flex:1;}
+.sal-nm{font-weight:800;font-size:15px;color:var(--text);}
+.sal-nm small{font-weight:600;color:var(--muted);font-size:11px;}
+.sal-sub{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.45;}
+.sal-chev{color:var(--muted);font-size:18px;}
+.sal-tag{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:20px;white-space:nowrap;}
+.sal-tag.o{background:var(--amberbg);color:#9a6400;}.sal-tag.g{background:var(--greenbg);color:var(--green);}.sal-tag.r{background:var(--redbg);color:var(--red);}
+.sal-empty{text-align:center;color:var(--muted);font-size:13px;padding:28px 10px;}
+.sal-warn{background:var(--amberbg);border:1.5px solid var(--amberborder);border-radius:14px;padding:10px 12px;font-size:12.5px;color:var(--text2);margin:0 0 12px;line-height:1.5;}
+.sal-warn .sal-btn{margin-top:8px;}
+.sal-back{font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;margin:0 0 10px;}
+.sal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:0 0 12px;}
+.sal-big{font-size:20px;font-weight:900;}
+.sal-btn{border:1.5px solid var(--border);background:var(--card);border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:700;color:var(--text2);cursor:pointer;}
+.sal-acts{margin:0 0 12px;}
+.sal-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:12px;margin:0 0 12px;}
+.sal-ch{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:0 0 8px;display:flex;justify-content:space-between;gap:8px;}
+.sal-ch span{text-transform:none;letter-spacing:0;font-size:12px;color:var(--text2);}
+.sal-ch span.r{color:var(--red);}
+.sal-pay{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);}
+.sal-pay:first-of-type{border-top:0;}
+.sal-thumb{width:42px;height:42px;border-radius:10px;object-fit:cover;background:var(--card2);border:1px solid var(--border);flex:none;cursor:pointer;}
+.sal-noimg{display:flex;align-items:center;justify-content:center;font-size:18px;cursor:default;}
+.sal-k{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:12px;background:var(--card2);color:var(--text2);margin-left:4px;vertical-align:2px;}
+.sal-k.advance{background:var(--amberbg);color:#9a6400;}.sal-k.salary{background:var(--greenbg);color:var(--green);}.sal-k.toLoan,.sal-k.loan{background:var(--redbg);color:var(--red);}
+.sal-x{border:none;background:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px;}
+.sal-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+.sal-wd{font-size:10.5px;font-weight:800;color:var(--muted);text-align:center;}
+.sal-day{text-align:center;font-size:13px;font-weight:700;padding:8px 0;border-radius:9px;border:1.5px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;user-select:none;}
+.sal-day.a{background:var(--redbg);border-color:var(--redborder);color:var(--red);}
+.sal-day.l{background:var(--amberbg);border-color:var(--amberborder);color:#9a6400;}
+.sal-day.t{box-shadow:0 0 0 2px var(--accent) inset;}
+.sal-up{display:block;text-align:center;padding:12px;border:1.5px dashed var(--border);border-radius:12px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;background:var(--card2);}
 </style>
 </head>
 <body>
@@ -756,6 +809,10 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
     </div>
   </div>
 
+  <div class="page" id="page-salary">
+    <div class="section"><div id="salaryRoot"></div></div>
+  </div>
+
   <div class="page" id="page-leads">
     <div class="section">
       <div class="sec-hdr">Leads <span id="leadsCount" style="color:var(--accent)"></span>
@@ -799,10 +856,19 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
   <div class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')"><div class="nav-icon">📊</div><div class="nav-label">Dashboard</div><div class="nav-dot"></div></div>
   <div class="nav-item" id="nav-clients" onclick="switchTab('clients')"><div class="nav-icon">👥</div><div class="nav-label">Clients</div><div class="nav-dot"></div></div>
   <div class="nav-item" id="nav-inventory" onclick="switchTab('inventory')"><div class="nav-icon">🏠</div><div class="nav-label">Inventory</div><div class="nav-dot"></div></div>
-  <div class="nav-item" id="nav-reminders" onclick="switchTab('reminders')"><div class="nav-icon">🔔</div><div class="nav-label">Reminders</div><div class="nav-dot"></div></div>
-  <div class="nav-item" id="nav-planner" onclick="switchTab('planner')"><div class="nav-icon">✅</div><div class="nav-label">Planner</div><div class="nav-dot"></div></div>
-  <div class="nav-item" id="nav-leads" onclick="switchTab('leads')"><div class="nav-icon">📋</div><div class="nav-label">Leads</div><div class="nav-dot"></div><div class="nav-badge" id="leadNavBadge">0</div></div>
-  <div class="nav-item" id="nav-sites" onclick="switchTab('sites')"><div class="nav-icon">🏗️</div><div class="nav-label">Sites</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-reminders" style="order:5" onclick="switchTab('reminders')"><div class="nav-icon">🔔</div><div class="nav-label">Reminders</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-planner" style="order:6" onclick="switchTab('planner')"><div class="nav-icon">✅</div><div class="nav-label">Planner</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-leads" style="order:4" onclick="switchTab('leads')"><div class="nav-icon">📋</div><div class="nav-label">Leads</div><div class="nav-dot"></div><div class="nav-badge" id="leadNavBadge">0</div></div>
+  <div class="nav-item" id="nav-sites" style="order:7" onclick="switchTab('sites')"><div class="nav-icon">🏗️</div><div class="nav-label">Sites</div><div class="nav-dot"></div></div>
+  <div class="nav-item" id="nav-more" onclick="toggleMore()" style="display:none;order:9"><div class="nav-icon">☰</div><div class="nav-label">More</div><div class="nav-dot"></div></div>
+</div>
+<div class="more-sheet" id="moreSheet" onclick="if(event.target===this)toggleMore(false)">
+  <div class="more-panel"><div class="more-grid">
+    <div class="more-it" id="more-reminders" onclick="moreGo('reminders')"><span>🔔</span>Reminders</div>
+    <div class="more-it" id="more-planner" onclick="moreGo('planner')"><span>✅</span>Planner</div>
+    <div class="more-it" id="more-sites" onclick="moreGo('sites')"><span>🏗️</span>Sites</div>
+    <div class="more-it" id="more-salary" onclick="moreGo('salary')" style="display:none"><span>💰</span>Salary</div>
+  </div></div>
 </div>
 
 <div class="fullpage" id="journeyPage">
@@ -4783,11 +4849,308 @@ async function exportProjectData(kind){
 // ═══════════════════════════════════════
 // UI
 // ═══════════════════════════════════════
+
+// ═══════════════════════════════════════
+// MORE SHEET (bottom bar: 4 tabs + More, like RentDesk)
+// ═══════════════════════════════════════
+const MORE_TABS=['reminders','planner','sites','salary'];
+function toggleMore(force){
+  const sh=document.getElementById('moreSheet'); if(!sh)return;
+  const on=force===undefined?!sh.classList.contains('open'):!!force;
+  sh.classList.toggle('open',on);
+}
+function moreGo(tab){ toggleMore(false); switchTab(tab); }
+
+// ═══════════════════════════════════════
+// SALARY (Kanwar only) — staff, monthly salary, advances, salary payments, loans, leaves
+// Kept in its own place in the database (pd_salary/main), apart from PropDesk data that other logins download.
+// Screenshots go to pd_salary_img/{id}. Both are locked to Kanwar's login by the Firebase rules.
+// ═══════════════════════════════════════
+const SAL_URL=FB_URL_BASE.replace(/propdesk\/$/,'pd_salary/')+'main';
+const SALIMG_BASE=FB_URL_BASE.replace(/propdesk\/$/,'pd_salary_img/');
+const SAL_CACHE='pd_salary_cache';
+let SAL=null, _salUT=null, _salExists=false, _salErr='', _salLoading=false, _salLoaded=false;
+let salMo='', salStaff=null, _salImgSel=null;
+const _salIsAdmin=()=>!!(CURRENT_USER&&CURRENT_USER.role==='admin');
+const _se=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const _sm=n=>'₹'+Math.round(Number(n)||0).toLocaleString('en-IN');
+const _sToday=()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const _sMk=()=>_sToday().slice(0,7);
+const _sMl=m=>{ const [y,mo]=String(m).split('-').map(Number); return new Date(y,mo-1,1).toLocaleDateString('en-IN',{month:'short',year:'numeric'}); };
+const _sFd=d=>{ if(!d)return'—'; const x=new Date(d+'T00:00:00'); return isNaN(x)?d:x.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); };
+const _sId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const _salEmpty=()=>({staff:[],pays:[],cuts:[],leaves:{}});
+function _salNorm(d){ d=d||_salEmpty(); d.staff=d.staff||[]; d.pays=d.pays||[]; d.cuts=d.cuts||[]; d.leaves=d.leaves||{}; return d; }
+function _salCache(){ try{ localStorage.setItem(SAL_CACHE,JSON.stringify(SAL)); }catch(e){} }
+
+async function _salGet(){
+  const r=await fetch(SAL_URL+'?key='+FB_KEY,{cache:'no-store'});
+  if(r.status===404)return {exists:false,data:_salEmpty(),ut:null};
+  if(r.status===403||r.status===401)throw Object.assign(new Error('rules'),{rules:true});
+  if(!r.ok)throw new Error('read '+r.status);
+  const j=await r.json();
+  return {exists:true,data:_salNorm(j.fields&&j.fields.data?JSON.parse(j.fields.data.stringValue):null),ut:j.updateTime||null};
+}
+async function salLoad(){
+  if(!_salIsAdmin())return;
+  _salLoading=true;
+  try{
+    const c=await _salGet(); SAL=c.data; _salUT=c.ut; _salExists=c.exists; _salErr=''; _salCache();
+  }catch(e){
+    _salErr=e.rules?'rules':'offline';
+    if(!SAL){ try{ SAL=_salNorm(JSON.parse(localStorage.getItem(SAL_CACHE)||'null')); }catch(x){ SAL=_salEmpty(); } }
+  }
+  _salLoading=false; _salLoaded=true;
+}
+// read the latest → change → write; starts again if the other phone saved in between. Needs internet.
+async function salSave(mutate,okMsg){
+  for(let i=0;i<5;i++){
+    let cur;
+    try{ cur=await _salGet(); }catch(e){ showToast(e.rules?'⚙️ Salary storage is not switched on in Firebase yet':'📶 No internet — not saved'); if(e.rules){_salErr='rules';renderSalary();} return false; }
+    const data=cur.data; mutate(data);
+    const body={fields:{data:{stringValue:JSON.stringify(data)},_ts:{integerValue:String(Date.now())}}};
+    const pre=cur.exists&&cur.ut?'&currentDocument.updateTime='+encodeURIComponent(cur.ut):'&currentDocument.exists=false';
+    let r;
+    try{ r=await fetch(SAL_URL+'?key='+FB_KEY+'&updateMask.fieldPaths=data&updateMask.fieldPaths=_ts'+pre,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
+    catch(e){ showToast('📶 No internet — not saved'); return false; }
+    if(r.ok){ const j=await r.json().catch(()=>({})); SAL=data; _salUT=j.updateTime||null; _salExists=true; _salErr=''; _salCache(); if(okMsg)showToast(okMsg); renderSalary(); return true; }
+    const t=await r.text().catch(()=>'');
+    if(r.status===403){ _salErr='rules'; showToast('⚙️ Salary storage is not switched on in Firebase yet'); renderSalary(); return false; }
+    if(!(r.status===409||/FAILED_PRECONDITION|ALREADY_EXISTS/.test(t))){ showToast('❌ Could not save ('+r.status+')'); return false; }
+    await new Promise(res=>setTimeout(res,200+Math.random()*400));
+  }
+  showToast('❌ Busy — try again'); return false;
+}
+async function _salImgPut(id,full,thumb){
+  const body={fields:{data:{stringValue:full},thumb:{stringValue:thumb},at:{stringValue:new Date().toISOString()}}};
+  const r=await fetch(SALIMG_BASE+id+'?key='+FB_KEY,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error('Screenshot upload failed: '+r.status);
+  _pdbPut('salf:'+id,full); _pdbPut('salt:'+id,thumb);
+}
+async function _salImgGet(id,kind){
+  const k='sal'+kind+':'+id; const c=await _pdbGet(k); if(c)return c;
+  const f=kind==='t'?'thumb':'data';
+  const r=await fetch(SALIMG_BASE+id+'?key='+FB_KEY+'&mask.fieldPaths='+f,{cache:'no-store'});
+  if(!r.ok)throw new Error('img '+r.status);
+  const j=await r.json(); const v=j.fields&&j.fields[f]&&j.fields[f].stringValue; if(!v)throw new Error('img missing');
+  _pdbPut(k,v); return v;
+}
+function _salHydrate(){
+  document.querySelectorAll('img[data-salimg]').forEach(im=>{ const id=im.dataset.salimg; im.removeAttribute('data-salimg'); _salImgGet(id,'t').then(v=>{im.src=v;}).catch(()=>{}); });
+}
+async function salViewImg(id){
+  showToast('Opening screenshot…');
+  try{ const v=await _salImgGet(id,'f'); const im=document.createElement('img'); im.src=v; viewPhoto(im); }catch(e){ showToast('❌ Could not open the screenshot'); }
+}
+
+// ── the sums ──
+function salRate(s,m){ const r=(s.rates||[]).filter(x=>x.from<=m).sort((a,b)=>b.from.localeCompare(a.from))[0]; return r?Number(r.amount)||0:0; }
+function salMonth(s,m){
+  const P=SAL.pays.filter(p=>p.staffId===s.id&&p.month===m);
+  const sum=k=>P.filter(p=>p.kind===k).reduce((a,p)=>a+(Number(p.amount)||0),0);
+  const salary=salRate(s,m);
+  const cut=SAL.cuts.filter(c=>c.staffId===s.id&&c.month===m).reduce((a,c)=>a+(Number(c.amount)||0),0);
+  const adv=sum('advance'), sal=sum('salary'), moved=sum('toLoan');
+  const paid=adv+sal-moved, payable=salary-cut;
+  const L=SAL.leaves[s.id]||{}; const days=Object.keys(L).filter(d=>d.slice(0,7)===m);
+  return {salary,cut,payable,adv,sal,moved,paid,toPay:payable-paid,absent:days.filter(d=>L[d]==='A').length,leave:days.filter(d=>L[d]==='L').length};
+}
+function salLoan(s){
+  const given=SAL.pays.filter(p=>p.staffId===s.id&&(p.kind==='loan'||p.kind==='toLoan')).reduce((a,p)=>a+(Number(p.amount)||0),0);
+  const cut=SAL.cuts.filter(c=>c.staffId===s.id).reduce((a,c)=>a+(Number(c.amount)||0),0);
+  return {given,cut,bal:given-cut};
+}
+function salYearLeaves(s,m){ const y=m.slice(0,4), L=SAL.leaves[s.id]||{}; const d=Object.keys(L).filter(x=>x.slice(0,4)===y); return {absent:d.filter(x=>L[x]==='A').length,leave:d.filter(x=>L[x]==='L').length}; }
+function _salStaffFor(m){ return SAL.staff.filter(s=>!s.archived||SAL.pays.some(p=>p.staffId===s.id&&p.month===m)); }
+function salShift(d){ const [y,mo]=salMo.split('-').map(Number); const x=new Date(y,mo-1+d,1); salMo=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'); renderSalary(); }
+function _salMonthNav(){ return `<div class="sal-mnav"><button onclick="salShift(-1)">‹</button><b>${_sMl(salMo)}</b><button onclick="salShift(1)">›</button>${salMo!==_sMk()?`<button class="sal-now" onclick="salMo=_sMk();renderSalary()">This month</button>`:''}</div>`; }
+function _salLeavesTxt(a,l){ return [a?a+' absent':'',l?l+' leave':''].filter(Boolean).join(' · ')||'no leaves'; }
+
+// ── screens ──
+async function renderSalary(){
+  const root=document.getElementById('salaryRoot'); if(!root)return;
+  if(!_salIsAdmin()){ root.innerHTML=''; return; }
+  if(!salMo)salMo=_sMk();
+  if(!_salLoaded){ root.innerHTML='<div class="sal-empty">Loading salary records…</div>'; await salLoad(); }
+  if(!SAL)SAL=_salEmpty();
+  root.innerHTML=salStaff?_salStaffH():_salListH();
+  _salHydrate();
+}
+function _salRulesH(){
+  return `<div class="sal-warn"><b>⚙️ One step needed in Firebase</b><br>Salary records are kept in a separate, private place that only your login can open. Firebase hasn't been told about it yet, so nothing can be saved. Ask Claude for the rule to paste in Firebase → Firestore → Rules.</div>`;
+}
+function _salListH(){
+  const list=_salStaffFor(salMo);
+  const rows=list.map(s=>({s,c:salMonth(s,salMo),l:salLoan(s)}));
+  const tot=rows.reduce((a,x)=>({sal:a.sal+x.c.payable,paid:a.paid+x.c.paid,due:a.due+Math.max(0,x.c.toPay)}),{sal:0,paid:0,due:0});
+  const loans=SAL.staff.reduce((a,s)=>a+Math.max(0,salLoan(s).bal),0);
+  return `${_salErr==='rules'?_salRulesH():_salErr==='offline'?'<div class="sal-warn">📶 Offline — showing the last saved copy. Changes need internet.</div>':''}
+  <div class="sec-hdr">Salary <button class="add-btn" onclick="salStaffForm()">+ Staff</button></div>
+  ${_salMonthNav()}
+  ${list.length?`<div class="sal-tiles">
+    <div><span>Salaries</span><b>${_sm(tot.sal)}</b></div><div><span>Paid</span><b class="g">${_sm(tot.paid)}</b></div>
+    <div><span>Still to pay</span><b class="${tot.due?'o':'g'}">${_sm(tot.due)}</b></div><div><span>Loans out</span><b class="${loans?'r':''}">${_sm(loans)}</b></div></div>`:''}
+  ${rows.map(({s,c,l})=>{
+    const tag=c.toPay>0?`<span class="sal-tag o">${_sm(c.toPay)} to pay</span>`:c.toPay<0?`<span class="sal-tag r">Overpaid ${_sm(-c.toPay)}</span>`:c.payable>0?`<span class="sal-tag g">Paid</span>`:'';
+    const bits=[_sm(c.salary)+'/month',c.adv?'advance '+_sm(c.adv)+(c.moved?' ('+_sm(c.moved)+' to loan)':''):'',c.sal?'paid '+_sm(c.sal):'',_salLeavesTxt(c.absent,c.leave),l.bal>0?'loan '+_sm(l.bal):''].filter(Boolean).join(' · ');
+    return `<div class="sal-row" onclick="salStaff='${s.id}';renderSalary();document.querySelector('.scroll-area').scrollTop=0;">
+      <div style="min-width:0"><div class="sal-nm">${_se(s.name)}${s.archived?' <small>(removed)</small>':''}</div><div class="sal-sub">${bits}</div></div>${tag}<span class="sal-chev">›</span></div>`;
+  }).join('')||`<div class="sal-empty">No staff added yet.<br><button class="add-btn" style="margin-top:10px" onclick="salStaffForm()">+ Add staff</button></div>`}`;
+}
+function _salStaffH(){
+  const s=SAL.staff.find(x=>x.id===salStaff); if(!s){ salStaff=null; return _salListH(); }
+  const c=salMonth(s,salMo), l=salLoan(s), yl=salYearLeaves(s,salMo);
+  const P=SAL.pays.filter(p=>p.staffId===s.id&&p.month===salMo&&p.kind!=='loan').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const KL={advance:'Advance',salary:'Salary paid',loan:'Loan given',toLoan:'Moved to loan'};
+  const payRow=p=>`<div class="sal-pay">
+      ${p.img?`<img class="sal-thumb" data-salimg="${p.img}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onclick="salViewImg('${p.img}')" alt="screenshot">`:`<div class="sal-thumb sal-noimg">${p.mode==='Cash'?'💵':'🧾'}</div>`}
+      <div style="flex:1;min-width:0"><div class="sal-nm" style="font-size:14px">${p.kind==='toLoan'?'−':''}${_sm(p.amount)} <span class="sal-k ${p.kind}">${KL[p.kind]||p.kind}</span></div>
+        <div class="sal-sub">${_sFd(p.date)}${p.kind!=='toLoan'?' · '+_se(p.mode||''):''}${p.ref?' · Ref '+_se(p.ref):''}${p.note?' · '+_se(p.note):''}</div></div>
+      <button class="sal-x" title="Delete" onclick="salDelPay('${p.id}')">×</button></div>`;
+  const loanEv=[...SAL.pays.filter(p=>p.staffId===s.id&&(p.kind==='loan'||p.kind==='toLoan')).map(p=>({d:p.date,t:'+',a:p.amount,x:(p.kind==='toLoan'?'Extra advance '+_sMl(p.month)+' moved':'Loan given')+(p.mode&&p.kind==='loan'?' · '+p.mode:'')+(p.note&&p.kind==='loan'?' · '+p.note:''),img:p.img,id:p.id,k:'p'})),
+    ...SAL.cuts.filter(x=>x.staffId===s.id).map(x=>({d:x.month+'-99',t:'−',a:x.amount,x:'Cut from '+_sMl(x.month)+' salary'+(x.note?' · '+x.note:''),id:x.id,k:'c'}))].sort((a,b)=>b.d.localeCompare(a.d));
+  // leave calendar
+  const [y,mo]=salMo.split('-').map(Number), first=new Date(y,mo-1,1).getDay(), nd=new Date(y,mo,0).getDate(), L=SAL.leaves[s.id]||{}, td=_sToday();
+  let cal='<div class="sal-cal">'+['S','M','T','W','T','F','S'].map(d=>`<div class="sal-wd">${d}</div>`).join('')+'<div></div>'.repeat(first);
+  for(let d=1;d<=nd;d++){ const k=salMo+'-'+String(d).padStart(2,'0'), v=L[k]; cal+=`<div class="sal-day${v==='A'?' a':v==='L'?' l':''}${k===td?' t':''}" onclick="salLeaveTap('${k}')">${d}</div>`; }
+  cal+='</div>';
+  return `${_salErr==='rules'?_salRulesH():_salErr==='offline'?'<div class="sal-warn">📶 Offline — showing the last saved copy. Changes need internet.</div>':''}
+  <div class="sal-back" onclick="salStaff=null;renderSalary()">‹ All staff</div>
+  <div class="sal-head"><div><div class="sal-big">${_se(s.name)}</div><div class="sal-sub">${_sm(salRate(s,salMo))}/month${s.phone?' · '+_se(s.phone):''}${s.joined?' · joined '+_sFd(s.joined)+' '+s.joined.slice(0,4):''}</div></div>
+    <button class="sal-btn" onclick="salStaffForm('${s.id}')">✏️ Edit</button></div>
+  ${_salMonthNav()}
+  <div class="sal-tiles">
+    <div><span>Salary</span><b>${_sm(c.salary)}</b>${c.cut?`<em>− loan cut ${_sm(c.cut)}</em>`:''}</div>
+    <div><span>Advance taken</span><b>${_sm(c.adv)}</b>${c.moved?`<em>${_sm(c.moved)} moved to loan</em>`:''}</div>
+    <div><span>Paid so far</span><b class="g">${_sm(c.paid)}</b></div>
+    <div><span>${c.toPay<0?'Overpaid':'Still to pay'}</span><b class="${c.toPay>0?'o':c.toPay<0?'r':'g'}">${_sm(Math.abs(c.toPay))}</b></div></div>
+  ${c.toPay<0?`<div class="sal-warn">Advance is ${_sm(-c.toPay)} more than this month's salary. <button class="sal-btn" onclick="salMoveToLoan('${s.id}',${-c.toPay})">Move ${_sm(-c.toPay)} to loan</button></div>`:''}
+  <div class="sal-acts"><button class="submit-btn" style="margin:0" onclick="salPayForm('${s.id}','advance')">+ Advance / payment</button></div>
+  <div class="sal-card"><div class="sal-ch">Payments — ${_sMl(salMo)}</div>${P.map(payRow).join('')||'<div class="sal-sub" style="padding:6px 2px">No payments this month.</div>'}</div>
+  <div class="sal-card"><div class="sal-ch">Leaves — ${_sMl(salMo)} <span>${_salLeavesTxt(c.absent,c.leave)} · ${salMo.slice(0,4)}: ${yl.absent+yl.leave}</span></div>
+    ${cal}<div class="sal-sub" style="margin-top:6px">Tap a day: <b style="color:var(--red)">Absent</b> → <b style="color:var(--amber)">Leave</b> → clear</div></div>
+  <div class="sal-card"><div class="sal-ch">Loan <span class="${l.bal>0?'r':''}">${l.bal>0?'Balance '+_sm(l.bal):'No loan'}</span></div>
+    ${loanEv.map(e=>`<div class="sal-pay">${e.img?`<img class="sal-thumb" data-salimg="${e.img}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onclick="salViewImg('${e.img}')" alt="screenshot">`:''}<div style="flex:1;min-width:0"><div class="sal-nm" style="font-size:14px">${e.t}${_sm(e.a)}</div><div class="sal-sub">${e.k==='p'?_sFd(e.d)+' · ':''}${_se(e.x)}</div></div><button class="sal-x" title="Delete" onclick="${e.k==='p'?`salDelPay('${e.id}')`:`salDelCut('${e.id}')`}">×</button></div>`).join('')}
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="sal-btn" style="flex:1" onclick="salPayForm('${s.id}','loan')">+ Give loan</button>${l.bal>0?`<button class="sal-btn" style="flex:1" onclick="salCutForm('${s.id}')">Cut from salary</button>`:''}</div></div>`;
+}
+
+// ── forms ──
+function _salModal(h){ const c=document.getElementById('modalContent'); c.innerHTML=h; document.getElementById('modalOverlay').classList.add('open'); }
+function salStaffForm(id){
+  const s=id?SAL.staff.find(x=>x.id===id):null;
+  _salModal(`<div class="modal-title">${s?'✏️ Edit staff':'👤 Add staff'}</div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="sf_name" value="${s?_se(s.name):''}" placeholder="Staff name"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="sf_phone" type="tel" value="${s?_se(s.phone||''):''}"></div>
+      <div class="form-group"><label class="form-label">Joined on</label><input class="form-input" id="sf_join" type="date" value="${s?_se(s.joined||''):''}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Monthly salary ₹</label><input class="form-input" id="sf_sal" type="number" inputmode="numeric" value="${s?salRate(s,salMo)||'':''}"></div>
+      <div class="form-group"><label class="form-label">${s?'New salary from':'Salary from'}</label><input class="form-input" id="sf_from" type="month" value="${salMo}"></div></div>
+    <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="sf_note" value="${s?_se(s.note||''):''}" placeholder="Optional"></div>
+    <button class="submit-btn" onclick="salStaffSave(${s?`'${s.id}'`:'null'})">Save</button>
+    ${s?`<button class="cancel-btn" style="color:var(--red)" onclick="salStaffArchive('${s.id}',${!s.archived})">${s.archived?'Bring back to the list':'Remove from list (records kept)'}</button>`:''}
+    <button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
+}
+async function salStaffSave(id){
+  const v=k=>(document.getElementById(k).value||'').trim();
+  const name=v('sf_name'), amt=Number(v('sf_sal')), from=v('sf_from')||salMo;
+  if(!name){ showToast('Enter a name'); return; }
+  if(!(amt>=0)||v('sf_sal')===''){ showToast('Enter the monthly salary'); return; }
+  const nid=id||_sId();
+  const ok=await salSave(d=>{
+    let s=d.staff.find(x=>x.id===nid);
+    if(!s){ s={id:nid,rates:[],at:new Date().toISOString()}; d.staff.push(s); }
+    s.name=name; s.phone=v('sf_phone'); s.joined=v('sf_join'); s.note=v('sf_note');
+    s.rates=(s.rates||[]).filter(r=>r.from!==from); if(salRate(s,from)!==amt||!s.rates.length)s.rates.push({from,amount:amt});
+  },id?'✅ Saved':'✅ Staff added');
+  if(ok){ closeModal(); if(!id){ salStaff=nid; renderSalary(); } }
+}
+async function salStaffArchive(id,arch){
+  if(arch&&!confirm('Remove from the list? All their payments, loans and leaves stay saved.'))return;
+  if(await salSave(d=>{ const s=d.staff.find(x=>x.id===id); if(s)s.archived=arch; },arch?'Removed from list':'Back on the list')){ closeModal(); if(arch)salStaff=null; renderSalary(); }
+}
+function salPayForm(sid,kind){
+  _salImgSel=null;
+  const s=SAL.staff.find(x=>x.id===sid);
+  _salModal(`<div class="modal-title">${kind==='loan'?'💸 Give loan':'💸 Payment'} — ${_se(s?s.name:'')}</div>
+    <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="sp_kind" onchange="document.getElementById('sp_mrow').style.display=this.value==='loan'?'none':''">
+      <option value="advance"${kind==='advance'?' selected':''}>Advance (from this month's salary)</option><option value="salary"${kind==='salary'?' selected':''}>Salary payment</option><option value="loan"${kind==='loan'?' selected':''}>Loan (separate, you cut it later)</option></select></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Amount ₹</label><input class="form-input" id="sp_amt" type="number" inputmode="numeric"></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="sp_date" type="date" value="${salMo===_sMk()?_sToday():salMo+'-01'}"></div></div>
+    <div class="form-group" id="sp_mrow"${kind==='loan'?' style="display:none"':''}><label class="form-label">For salary of</label><input class="form-input" id="sp_month" type="month" value="${salMo}"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Paid by</label><select class="form-select" id="sp_mode"><option>UPI</option><option>Cash</option><option>Bank Transfer</option><option>Cheque</option></select></div>
+      <div class="form-group"><label class="form-label">UPI / ref no.</label><input class="form-input" id="sp_ref" placeholder="Optional"></div></div>
+    <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="sp_note" placeholder="Optional"></div>
+    <div class="form-group"><label class="form-label">Screenshot</label>
+      <label class="sal-up"><input type="file" accept="image/*" style="display:none" onchange="salPickImg(this)"><span id="sp_imgl">📷 Add screenshot (optional)</span></label>
+      <img id="sp_prev" style="display:none;max-width:100%;max-height:180px;border-radius:12px;margin-top:8px"></div>
+    <button class="submit-btn" id="sp_save" onclick="salPaySave('${sid}')">Save</button>
+    <button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
+}
+async function salPickImg(inp){
+  const f=inp.files&&inp.files[0]; if(!f)return;
+  document.getElementById('sp_imgl').textContent='Preparing…';
+  try{ const full=await fileToPhoto(f); const thumb=await thumbPhoto(full); _salImgSel={full,thumb};
+    const pv=document.getElementById('sp_prev'); pv.src=full; pv.style.display='block'; document.getElementById('sp_imgl').textContent='📷 Change screenshot';
+  }catch(e){ _salImgSel=null; document.getElementById('sp_imgl').textContent='📷 Add screenshot (optional)'; showToast('❌ Could not read that picture'); }
+}
+async function salPaySave(sid){
+  const v=k=>(document.getElementById(k).value||'').trim();
+  const kind=v('sp_kind'), amount=Number(v('sp_amt')), date=v('sp_date');
+  if(!(amount>0)){ showToast('Enter the amount'); return; }
+  if(!date){ showToast('Enter the date'); return; }
+  const month=kind==='loan'?date.slice(0,7):(v('sp_month')||date.slice(0,7));
+  const btn=document.getElementById('sp_save'); btn.disabled=true; btn.textContent='Saving…';
+  let img=null;
+  if(_salImgSel){ img=_sId(); try{ await _salImgPut(img,_salImgSel.full,_salImgSel.thumb); }catch(e){ btn.disabled=false; btn.textContent='Save'; showToast(/403/.test(e.message)?'⚙️ Salary storage is not switched on in Firebase yet':'❌ Screenshot not uploaded — check internet'); return; } }
+  const ok=await salSave(d=>{ d.pays.push({id:_sId(),staffId:sid,kind,amount,date,month,mode:v('sp_mode'),ref:v('sp_ref'),note:v('sp_note'),img,by:CURRENT_USER.name,at:new Date().toISOString()}); },'✅ Saved');
+  if(ok){ _salImgSel=null; closeModal(); } else { btn.disabled=false; btn.textContent='Save'; }
+}
+function salCutForm(sid){
+  const s=SAL.staff.find(x=>x.id===sid), l=salLoan(s);
+  _salModal(`<div class="modal-title">✂️ Cut loan from salary — ${_se(s.name)}</div>
+    <div class="sal-sub" style="margin-bottom:12px">Loan balance ${_sm(l.bal)}. The amount you cut is taken off that month's salary.</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Amount ₹</label><input class="form-input" id="sc_amt" type="number" inputmode="numeric"></div>
+      <div class="form-group"><label class="form-label">From salary of</label><input class="form-input" id="sc_month" type="month" value="${salMo}"></div></div>
+    <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="sc_note" placeholder="Optional"></div>
+    <button class="submit-btn" onclick="salCutSave('${sid}')">Save</button><button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
+}
+async function salCutSave(sid){
+  const amt=Number(document.getElementById('sc_amt').value), month=document.getElementById('sc_month').value||salMo, note=document.getElementById('sc_note').value.trim();
+  const s=SAL.staff.find(x=>x.id===sid), bal=salLoan(s).bal;
+  if(!(amt>0)){ showToast('Enter the amount'); return; }
+  if(amt>bal){ showToast('More than the loan balance ('+_sm(bal)+')'); return; }
+  if(await salSave(d=>{ d.cuts.push({id:_sId(),staffId:sid,month,amount:amt,note,by:CURRENT_USER.name,at:new Date().toISOString()}); },'✅ Loan cut saved'))closeModal();
+}
+async function salMoveToLoan(sid,amt){
+  if(!confirm('Move '+_sm(amt)+' of extra advance into the loan? You can cut it from a later salary when you decide.'))return;
+  await salSave(d=>{ d.pays.push({id:_sId(),staffId:sid,kind:'toLoan',amount:amt,date:_sToday(),month:salMo,note:'Extra advance moved to loan',by:CURRENT_USER.name,at:new Date().toISOString()}); },'✅ Moved to loan');
+}
+async function salDelPay(id){
+  const p=SAL.pays.find(x=>x.id===id); if(!p)return;
+  if(!confirm('Delete this entry of '+_sm(p.amount)+' ('+_sFd(p.date)+')?'))return;
+  await salSave(d=>{ d.pays=d.pays.filter(x=>x.id!==id); },'🗑 Deleted');
+}
+async function salDelCut(id){
+  const c=SAL.cuts.find(x=>x.id===id); if(!c)return;
+  if(!confirm('Delete this loan cut of '+_sm(c.amount)+'?'))return;
+  await salSave(d=>{ d.cuts=d.cuts.filter(x=>x.id!==id); },'🗑 Deleted');
+}
+async function salLeaveTap(day){
+  const sid=salStaff; if(!sid)return;
+  const cur=(SAL.leaves[sid]||{})[day], next=!cur?'A':cur==='A'?'L':null;
+  const apply=d=>{ d.leaves[sid]=d.leaves[sid]||{}; if(next)d.leaves[sid][day]=next; else delete d.leaves[sid][day]; };
+  apply(SAL); renderSalary();                       // show it straight away
+  if(!(await salSave(apply))){ _salLoaded=false; renderSalary(); }   // not saved → reload what is really saved
+}
+
 function switchTab(tab){
+  if(tab==='salary'&&!(CURRENT_USER&&CURRENT_USER.role==='admin'))tab='dashboard';
+  toggleMore(false);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('nav-'+tab).classList.add('active');
+  { const n=document.getElementById('nav-'+tab), more=document.getElementById('nav-more');
+    if(n&&n.style.display!=='none')n.classList.add('active'); else if(more&&more.style.display!=='none')more.classList.add('active');
+    document.querySelectorAll('.more-it').forEach(m=>m.classList.toggle('on',m.id==='more-'+tab)); }
   document.querySelector('.scroll-area').scrollTop=0;
   if(tab==='dashboard')renderDashboard();
   else if(tab==='clients')renderClients();
@@ -4795,6 +5158,7 @@ function switchTab(tab){
   else if(tab==='reminders')renderReminders();
   else if(tab==='planner')renderPlanner();
   else if(tab==='sites')renderSites();
+  else if(tab==='salary'){salStaff=null;renderSalary();}
   else if(tab==='leads'){clearUnreadLeads();renderLeads();pullLeadsFromFirestore();}
 }
 
@@ -4956,7 +5320,7 @@ async function signOutPropDesk(){
   showToast('Saving & signing out…');
   try{ await Promise.race([ (async()=>{ for(let i=0;i<40&&isSaving;i++) await new Promise(r=>setTimeout(r,100)); })(), new Promise(r=>setTimeout(r,4000)) ]); }catch(e){}
   _auth=null; _authSave();
-  try{ sessionStorage.removeItem('pd_user'); }catch(e){}
+  try{ sessionStorage.removeItem('pd_user'); localStorage.removeItem(SAL_CACHE); }catch(e){}
   location.reload();
 }
 
@@ -5004,6 +5368,7 @@ function applyRoleUI() {
       const n = document.getElementById('nav-'+t);
       if (n) n.style.display = '';
     });
+    { const nm=document.getElementById('nav-more'); if(nm) nm.style.display='none'; }
     // Hide header stats row
     const statsRow = document.querySelector('.stats-row');
     if (statsRow) statsRow.style.display = 'none';
@@ -5018,10 +5383,17 @@ function applyRoleUI() {
     if (wipeBtn) wipeBtn.style.display = '';
     switchTab('leads');
   } else {
-    ['dashboard','clients','inventory','reminders','planner','sites','leads'].forEach(t => {
+    // 4 tabs + More (Reminders, Planner, Sites — and Salary for Kanwar only)
+    ['dashboard','clients','inventory','leads','more'].forEach(t => {
       const n = document.getElementById('nav-'+t);
       if (n) n.style.display = '';
     });
+    ['reminders','planner','sites'].forEach(t => {
+      const n = document.getElementById('nav-'+t);
+      if (n) n.style.display = 'none';
+    });
+    const ms = document.getElementById('more-salary');
+    if (ms) ms.style.display = CURRENT_USER.role === 'admin' ? '' : 'none';
     const statsRow = document.querySelector('.stats-row');
     if (statsRow) statsRow.style.display = '';
     // All users can assign tasks — show assign row, filter options per role
