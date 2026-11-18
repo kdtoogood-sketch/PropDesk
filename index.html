@@ -539,6 +539,12 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
 .more-it{display:flex;align-items:center;gap:10px;padding:14px 12px;border:1.5px solid var(--border);border-radius:14px;background:var(--card2);font-weight:700;font-size:14px;color:var(--text);cursor:pointer;}
 .more-it span{font-size:20px;}
 .more-it.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent);}
+.sal-acts{display:flex;gap:8px;}
+.sal-due{background:var(--card);border:1.5px dashed var(--border);border-radius:12px;padding:9px 12px;font-size:13px;color:var(--text2);margin:0 0 12px;}
+.sal-due b{color:var(--text);}
+.sal-k.extra{background:var(--purplebg);color:var(--purple);}
+.sal-tiles em.g{color:var(--green);}
+.sal-chk{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--text2);margin:2px 0 12px;}
 /* salary */
 .sal-mnav{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
 .sal-mnav button{border:1.5px solid var(--border);background:var(--card);border-radius:10px;padding:6px 12px;font-size:15px;font-weight:700;color:var(--text2);cursor:pointer;}
@@ -4879,8 +4885,8 @@ const _sMk=()=>_sToday().slice(0,7);
 const _sMl=m=>{ const [y,mo]=String(m).split('-').map(Number); return new Date(y,mo-1,1).toLocaleDateString('en-IN',{month:'short',year:'numeric'}); };
 const _sFd=d=>{ if(!d)return'—'; const x=new Date(d+'T00:00:00'); return isNaN(x)?d:x.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); };
 const _sId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const _salEmpty=()=>({staff:[],pays:[],cuts:[],leaves:{}});
-function _salNorm(d){ d=d||_salEmpty(); d.staff=d.staff||[]; d.pays=d.pays||[]; d.cuts=d.cuts||[]; d.leaves=d.leaves||{}; return d; }
+const _salEmpty=()=>({staff:[],pays:[],cuts:[],earns:[],leaves:{}});
+function _salNorm(d){ d=d||_salEmpty(); d.staff=d.staff||[]; d.pays=d.pays||[]; d.cuts=d.cuts||[]; d.earns=d.earns||[]; d.leaves=d.leaves||{}; return d; }
 function _salCache(){ try{ localStorage.setItem(SAL_CACHE,JSON.stringify(SAL)); }catch(e){} }
 
 async function _salGet(){
@@ -4950,10 +4956,12 @@ function salMonth(s,m){
   const sum=k=>P.filter(p=>p.kind===k).reduce((a,p)=>a+(Number(p.amount)||0),0);
   const salary=salRate(s,m);
   const cut=SAL.cuts.filter(c=>c.staffId===s.id&&c.month===m).reduce((a,c)=>a+(Number(c.amount)||0),0);
-  const adv=sum('advance'), sal=sum('salary'), moved=sum('toLoan');
-  const paid=adv+sal-moved, payable=salary-cut;
+  const E=SAL.earns.filter(e=>e.staffId===s.id&&e.month===m);
+  const extra=E.reduce((a,e)=>a+(Number(e.amount)||0),0);
+  const adv=sum('advance'), sal=sum('salary')+sum('extra'), moved=sum('toLoan');
+  const paid=adv+sal-moved, payable=salary+extra-cut;
   const L=SAL.leaves[s.id]||{}; const days=Object.keys(L).filter(d=>d.slice(0,7)===m);
-  return {salary,cut,payable,adv,sal,moved,paid,toPay:payable-paid,absent:days.filter(d=>L[d]==='A').length,leave:days.filter(d=>L[d]==='L').length};
+  return {salary,extra,cut,payable,adv,sal,moved,paid,toPay:payable-paid,absent:days.filter(d=>L[d]==='A').length,leave:days.filter(d=>L[d]==='L').length};
 }
 function salLoan(s){
   const given=SAL.pays.filter(p=>p.staffId===s.id&&(p.kind==='loan'||p.kind==='toLoan')).reduce((a,p)=>a+(Number(p.amount)||0),0);
@@ -4961,7 +4969,9 @@ function salLoan(s){
   return {given,cut,bal:given-cut};
 }
 function salYearLeaves(s,m){ const y=m.slice(0,4), L=SAL.leaves[s.id]||{}; const d=Object.keys(L).filter(x=>x.slice(0,4)===y); return {absent:d.filter(x=>L[x]==='A').length,leave:d.filter(x=>L[x]==='L').length}; }
-function _salStaffFor(m){ return SAL.staff.filter(s=>!s.archived||SAL.pays.some(p=>p.staffId===s.id&&p.month===m)); }
+function _salStaffFor(m){ return SAL.staff.filter(s=>!s.archived||SAL.pays.some(p=>p.staffId===s.id&&p.month===m)||SAL.earns.some(e=>e.staffId===s.id&&e.month===m)); }
+const SAL_ET={incentive:'Incentive',sale:'Sale incentive',cleaning:'Airbnb cleaning',work:'Extra work',other:'Other'};
+function salYearExtras(s,m){ const y=m.slice(0,4), t={}; SAL.earns.filter(e=>e.staffId===s.id&&(e.month||'').slice(0,4)===y).forEach(e=>{ t[e.type]=(t[e.type]||0)+(Number(e.amount)||0); }); return t; }
 function salShift(d){ const [y,mo]=salMo.split('-').map(Number); const x=new Date(y,mo-1+d,1); salMo=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'); renderSalary(); }
 function _salMonthNav(){ return `<div class="sal-mnav"><button onclick="salShift(-1)">‹</button><b>${_sMl(salMo)}</b><button onclick="salShift(1)">›</button>${salMo!==_sMk()?`<button class="sal-now" onclick="salMo=_sMk();renderSalary()">This month</button>`:''}</div>`; }
 function _salLeavesTxt(a,l){ return [a?a+' absent':'',l?l+' leave':''].filter(Boolean).join(' · ')||'no leaves'; }
@@ -4982,17 +4992,17 @@ function _salRulesH(){
 function _salListH(){
   const list=_salStaffFor(salMo);
   const rows=list.map(s=>({s,c:salMonth(s,salMo),l:salLoan(s)}));
-  const tot=rows.reduce((a,x)=>({sal:a.sal+x.c.payable,paid:a.paid+x.c.paid,due:a.due+Math.max(0,x.c.toPay)}),{sal:0,paid:0,due:0});
+  const tot=rows.reduce((a,x)=>({sal:a.sal+x.c.payable,ext:a.ext+x.c.extra,paid:a.paid+x.c.paid,due:a.due+Math.max(0,x.c.toPay)}),{sal:0,ext:0,paid:0,due:0});
   const loans=SAL.staff.reduce((a,s)=>a+Math.max(0,salLoan(s).bal),0);
   return `${_salErr==='rules'?_salRulesH():_salErr==='offline'?'<div class="sal-warn">📶 Offline — showing the last saved copy. Changes need internet.</div>':''}
   <div class="sec-hdr">Salary <button class="add-btn" onclick="salStaffForm()">+ Staff</button></div>
   ${_salMonthNav()}
   ${list.length?`<div class="sal-tiles">
-    <div><span>Salaries</span><b>${_sm(tot.sal)}</b></div><div><span>Paid</span><b class="g">${_sm(tot.paid)}</b></div>
+    <div><span>Due this month</span><b>${_sm(tot.sal)}</b>${tot.ext?`<em class="g">incl. ${_sm(tot.ext)} extras</em>`:''}</div><div><span>Paid</span><b class="g">${_sm(tot.paid)}</b></div>
     <div><span>Still to pay</span><b class="${tot.due?'o':'g'}">${_sm(tot.due)}</b></div><div><span>Loans out</span><b class="${loans?'r':''}">${_sm(loans)}</b></div></div>`:''}
   ${rows.map(({s,c,l})=>{
     const tag=c.toPay>0?`<span class="sal-tag o">${_sm(c.toPay)} to pay</span>`:c.toPay<0?`<span class="sal-tag r">Overpaid ${_sm(-c.toPay)}</span>`:c.payable>0?`<span class="sal-tag g">Paid</span>`:'';
-    const bits=[_sm(c.salary)+'/month',c.adv?'advance '+_sm(c.adv)+(c.moved?' ('+_sm(c.moved)+' to loan)':''):'',c.sal?'paid '+_sm(c.sal):'',_salLeavesTxt(c.absent,c.leave),l.bal>0?'loan '+_sm(l.bal):''].filter(Boolean).join(' · ');
+    const bits=[(c.salary||!c.extra?_sm(c.salary)+'/month':''),c.extra?'+ '+_sm(c.extra)+' extras':'',c.adv?'advance '+_sm(c.adv)+(c.moved?' ('+_sm(c.moved)+' to loan)':''):'',c.sal?'paid '+_sm(c.sal):'',(c.absent||c.leave)?_salLeavesTxt(c.absent,c.leave):'',l.bal>0?'loan '+_sm(l.bal):''].filter(Boolean).join(' · ');
     return `<div class="sal-row" onclick="salStaff='${s.id}';renderSalary();document.querySelector('.scroll-area').scrollTop=0;">
       <div style="min-width:0"><div class="sal-nm">${_se(s.name)}${s.archived?' <small>(removed)</small>':''}</div><div class="sal-sub">${bits}</div></div>${tag}<span class="sal-chev">›</span></div>`;
   }).join('')||`<div class="sal-empty">No staff added yet.<br><button class="add-btn" style="margin-top:10px" onclick="salStaffForm()">+ Add staff</button></div>`}`;
@@ -5001,7 +5011,7 @@ function _salStaffH(){
   const s=SAL.staff.find(x=>x.id===salStaff); if(!s){ salStaff=null; return _salListH(); }
   const c=salMonth(s,salMo), l=salLoan(s), yl=salYearLeaves(s,salMo);
   const P=SAL.pays.filter(p=>p.staffId===s.id&&p.month===salMo&&p.kind!=='loan').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  const KL={advance:'Advance',salary:'Salary paid',loan:'Loan given',toLoan:'Moved to loan'};
+  const KL={advance:'Advance',salary:'Salary paid',extra:'Extra paid',loan:'Loan given',toLoan:'Moved to loan'};
   const payRow=p=>`<div class="sal-pay">
       ${p.img?`<img class="sal-thumb" data-salimg="${p.img}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onclick="salViewImg('${p.img}')" alt="screenshot">`:`<div class="sal-thumb sal-noimg">${p.mode==='Cash'?'💵':'🧾'}</div>`}
       <div style="flex:1;min-width:0"><div class="sal-nm" style="font-size:14px">${p.kind==='toLoan'?'−':''}${_sm(p.amount)} <span class="sal-k ${p.kind}">${KL[p.kind]||p.kind}</span></div>
@@ -5024,8 +5034,14 @@ function _salStaffH(){
     <div><span>Advance taken</span><b>${_sm(c.adv)}</b>${c.moved?`<em>${_sm(c.moved)} moved to loan</em>`:''}</div>
     <div><span>Paid so far</span><b class="g">${_sm(c.paid)}</b></div>
     <div><span>${c.toPay<0?'Overpaid':'Still to pay'}</span><b class="${c.toPay>0?'o':c.toPay<0?'r':'g'}">${_sm(Math.abs(c.toPay))}</b></div></div>
+  ${(c.extra||c.cut)?`<div class="sal-due">Salary ${_sm(c.salary)}${c.extra?' + Extras '+_sm(c.extra):''}${c.cut?' − Loan cut '+_sm(c.cut):''} = <b>${_sm(c.payable)} due</b></div>`:''}
   ${c.toPay<0?`<div class="sal-warn">Advance is ${_sm(-c.toPay)} more than this month's salary. <button class="sal-btn" onclick="salMoveToLoan('${s.id}',${-c.toPay})">Move ${_sm(-c.toPay)} to loan</button></div>`:''}
-  <div class="sal-acts"><button class="submit-btn" style="margin:0" onclick="salPayForm('${s.id}','advance')">+ Advance / payment</button></div>
+  <div class="sal-acts"><button class="submit-btn" style="margin:0;flex:1.3" onclick="salPayForm('${s.id}','advance')">+ Advance / payment</button><button class="sal-btn" style="flex:1" onclick="salEarnForm('${s.id}')">+ Extra earning</button></div>
+  ${(()=>{ const E=SAL.earns.filter(e=>e.staffId===s.id&&e.month===salMo).sort((a,b)=>(a.date||'').localeCompare(b.date||'')), ye=salYearExtras(s,salMo), yt=Object.values(ye).reduce((a,v)=>a+v,0);
+    if(!E.length&&!yt)return '';
+    return `<div class="sal-card"><div class="sal-ch">Extra earnings — ${_sMl(salMo)} <span>${_sm(c.extra)}</span></div>
+      ${E.map(e=>`<div class="sal-pay">${e.img?`<img class="sal-thumb" data-salimg="${e.img}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" onclick="salViewImg('${e.img}')" alt="screenshot">`:''}<div style="flex:1;min-width:0"><div class="sal-nm" style="font-size:14px">+${_sm(e.amount)} <span class="sal-k extra">${SAL_ET[e.type]||e.type}</span></div><div class="sal-sub">${_sFd(e.date)}${e.note?' · '+_se(e.note):''}${e.payId?' · paid now':''}</div></div><button class="sal-x" title="Delete" onclick="salDelEarn('${e.id}')">×</button></div>`).join('')||'<div class="sal-sub" style="padding:4px 2px">None this month.</div>'}
+      ${yt?`<div class="sal-sub" style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><b>${salMo.slice(0,4)} so far:</b> ${Object.entries(ye).map(([k,v])=>(SAL_ET[k]||k)+' '+_sm(v)).join(' · ')} · <b>total ${_sm(yt)}</b></div>`:''}</div>`; })()}
   <div class="sal-card"><div class="sal-ch">Payments — ${_sMl(salMo)}</div>${P.map(payRow).join('')||'<div class="sal-sub" style="padding:6px 2px">No payments this month.</div>'}</div>
   <div class="sal-card"><div class="sal-ch">Leaves — ${_sMl(salMo)} <span>${_salLeavesTxt(c.absent,c.leave)} · ${salMo.slice(0,4)}: ${yl.absent+yl.leave}</span></div>
     ${cal}<div class="sal-sub" style="margin-top:6px">Tap a day: <b style="color:var(--red)">Absent</b> → <b style="color:var(--amber)">Leave</b> → clear</div></div>
@@ -5085,6 +5101,44 @@ function salPayForm(sid,kind){
     <button class="submit-btn" id="sp_save" onclick="salPaySave('${sid}')">Save</button>
     <button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
 }
+function salEarnForm(sid){
+  _salImgSel=null;
+  const s=SAL.staff.find(x=>x.id===sid);
+  _salModal(`<div class="modal-title">⭐ Extra earning — ${_se(s?s.name:'')}</div>
+    <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="se_type">${Object.entries(SAL_ET).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Amount ₹</label><input class="form-input" id="se_amt" type="number" inputmode="numeric"></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="se_date" type="date" value="${salMo===_sMk()?_sToday():salMo+'-01'}"></div></div>
+    <div class="form-group"><label class="form-label">Add to salary of</label><input class="form-input" id="se_month" type="month" value="${salMo}"></div>
+    <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="se_note" placeholder="Which deal / unit / job"></div>
+    <label class="sal-chk"><input type="checkbox" id="se_paid" onchange="document.getElementById('se_payrow').style.display=this.checked?'':'none'"> Paid now (records the payment too)</label>
+    <div class="form-row" id="se_payrow" style="display:none"><div class="form-group"><label class="form-label">Paid by</label><select class="form-select" id="sp_mode"><option>UPI</option><option>Cash</option><option>Bank Transfer</option><option>Cheque</option></select></div>
+      <div class="form-group"><label class="form-label">UPI / ref no.</label><input class="form-input" id="sp_ref" placeholder="Optional"></div></div>
+    <div class="form-group"><label class="form-label">Screenshot</label>
+      <label class="sal-up"><input type="file" accept="image/*" style="display:none" onchange="salPickImg(this)"><span id="sp_imgl">📷 Add screenshot (optional)</span></label>
+      <img id="sp_prev" style="display:none;max-width:100%;max-height:180px;border-radius:12px;margin-top:8px"></div>
+    <button class="submit-btn" id="sp_save" onclick="salEarnSave('${sid}')">Save</button>
+    <button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
+}
+async function salEarnSave(sid){
+  const v=k=>(document.getElementById(k).value||'').trim();
+  const type=v('se_type'), amount=Number(v('se_amt')), date=v('se_date'), month=v('se_month')||date.slice(0,7), paidNow=document.getElementById('se_paid').checked;
+  if(!(amount>0)){ showToast('Enter the amount'); return; }
+  if(!date){ showToast('Enter the date'); return; }
+  const btn=document.getElementById('sp_save'); btn.disabled=true; btn.textContent='Saving…';
+  let img=null;
+  if(_salImgSel){ img=_sId(); try{ await _salImgPut(img,_salImgSel.full,_salImgSel.thumb); }catch(e){ btn.disabled=false; btn.textContent='Save'; showToast(/403/.test(e.message)?'⚙️ Salary storage is not switched on in Firebase yet':'❌ Screenshot not uploaded — check internet'); return; } }
+  const eid=_sId(), pid=paidNow?_sId():null, now=new Date().toISOString();
+  const ok=await salSave(d=>{
+    d.earns.push({id:eid,staffId:sid,type,amount,date,month,note:v('se_note'),img,payId:pid,by:CURRENT_USER.name,at:now});
+    if(pid)d.pays.push({id:pid,staffId:sid,kind:'extra',amount,date,month,mode:v('sp_mode'),ref:v('sp_ref'),note:(SAL_ET[type]||type)+(v('se_note')?' — '+v('se_note'):''),img:null,earnId:eid,by:CURRENT_USER.name,at:now});
+  },'✅ Saved');
+  if(ok){ _salImgSel=null; closeModal(); } else { btn.disabled=false; btn.textContent='Save'; }
+}
+async function salDelEarn(id){
+  const e=SAL.earns.find(x=>x.id===id); if(!e)return;
+  if(!confirm('Delete this extra earning of '+_sm(e.amount)+(e.payId?' and the payment saved with it':'')+'?'))return;
+  await salSave(d=>{ d.earns=d.earns.filter(x=>x.id!==id); if(e.payId)d.pays=d.pays.filter(x=>x.id!==e.payId); },'🗑 Deleted');
+}
 async function salPickImg(inp){
   const f=inp.files&&inp.files[0]; if(!f)return;
   document.getElementById('sp_imgl').textContent='Preparing…';
@@ -5127,7 +5181,7 @@ async function salMoveToLoan(sid,amt){
 async function salDelPay(id){
   const p=SAL.pays.find(x=>x.id===id); if(!p)return;
   if(!confirm('Delete this entry of '+_sm(p.amount)+' ('+_sFd(p.date)+')?'))return;
-  await salSave(d=>{ d.pays=d.pays.filter(x=>x.id!==id); },'🗑 Deleted');
+  await salSave(d=>{ d.pays=d.pays.filter(x=>x.id!==id); d.earns.forEach(e=>{ if(e.payId===id)e.payId=null; }); },'🗑 Deleted');
 }
 async function salDelCut(id){
   const c=SAL.cuts.find(x=>x.id===id); if(!c)return;
