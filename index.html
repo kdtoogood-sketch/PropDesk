@@ -549,6 +549,9 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
 .ocr-fill{background:#FEF9C3!important;border-color:#EAB308!important;}
 .sal-sb{background:var(--greenbg);border:1px solid var(--greenborder);border-radius:12px;padding:9px 11px;margin:0 0 8px;}
 .sal-k.sb{background:#fff;color:var(--green);}
+.sal-rem{background:var(--amberbg);border:1.5px solid var(--amberborder);border-radius:16px;padding:12px 14px;margin:0 0 12px;cursor:pointer;}
+.sal-rem-t{font-weight:900;font-size:14.5px;color:#9a6400;}
+.sal-rem-s{font-size:12.5px;color:var(--text2);margin-top:3px;line-height:1.45;}
 /* salary */
 .sal-mnav{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
 .sal-mnav button{border:1.5px solid var(--border);background:var(--card);border-radius:10px;padding:6px 12px;font-size:15px;font-weight:700;color:var(--text2);cursor:pointer;}
@@ -652,6 +655,7 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
 <div class="scroll-area">
   <div class="page active" id="page-dashboard">
     <div class="section">
+      <div id="salRemDash"></div>
       <div id="dashAlert"></div>
       <div class="heat-row">
         <div class="heat-box hot" onclick="showHeatClients('hot')"><div class="heat-num" id="dhHot">0</div><div class="heat-lbl">🔥 Hot</div><div class="heat-names" id="hnHot"></div></div>
@@ -794,6 +798,7 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
           <option value="Jasvinder" class="opt-admin opt-baljot">Jasvinder</option>
         </select>
       </div>
+      <div id="salRemPlan"></div>
       <div class="sec-hdr" id="taskListHdr">Tasks</div>
       <div id="taskList"></div>
       <div class="planner-actions">
@@ -2195,6 +2200,7 @@ function renderDashboard(){
   else alertEl.innerHTML=`<div class="dash-alert" style="background:linear-gradient(135deg,var(--green),#20c97a)"><div class="dash-alert-title">✅ All caught up!</div><div class="dash-alert-sub">No pending follow-ups today.</div></div>`;
   document.getElementById('dashFollowups').innerHTML=DB.reminders.filter(r=>r.date<=today).slice(0,3).map(r=>reminderCardHTML(r)).join('')||`<div class="empty"><div class="emo">🎉</div><p>No follow-ups today!</p></div>`;
   const recent=[...DB.visits].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  try{ salRemindRender(); }catch(e){}
   document.getElementById('dashRecent').innerHTML=recent.length?recent.map(v=>{const c=DB.clients.find(x=>x.id===v.clientId);return`<div class="reminder-card" onclick="openJourney(${v.clientId})"><div class="reminder-icon upcoming">🏠</div><div class="reminder-body"><div class="reminder-name">${c?c.name:'Unknown'}</div><div class="reminder-note">${v.properties.length} unit${v.properties.length>1?'s':''} shown</div><div class="reminder-time upcoming">${fmtDate(v.date)}</div></div></div>`;}).join(''):`<div class="empty"><div class="emo">📋</div><p>No visits logged yet</p></div>`;
 }
 function showHeatClients(heat){switchTab('clients');setTimeout(()=>{const chips=document.querySelectorAll('#clientFilters .fchip');chips.forEach(c=>c.classList.remove('active'));const idx=heat==='hot'?4:heat==='warm'?5:6;if(chips[idx])chips[idx].classList.add('active');renderClients(heat);},50);}
@@ -3338,6 +3344,7 @@ function sendWAInventory(){window.open(`https://wa.me/?text=${encodeURIComponent
 // ═══════════════════════════════════════
 function renderPlanner(){
   updateStats();
+  setTimeout(()=>{ try{ salRemindRender(); }catch(e){} },0);
   const d=new Date(currentPlannerDate+'T00:00:00');
   const isToday=currentPlannerDate===todayStr();
   const tasks=DB.tasks[currentPlannerDate]||[];
@@ -5076,7 +5083,7 @@ async function salSave(mutate,okMsg){
     let r;
     try{ r=await fetch(SAL_URL+'?key='+FB_KEY+'&updateMask.fieldPaths=data&updateMask.fieldPaths=_ts'+pre,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
     catch(e){ showToast('📶 No internet — not saved'); return false; }
-    if(r.ok){ const j=await r.json().catch(()=>({})); SAL=data; _salUT=j.updateTime||null; _salExists=true; _salErr=''; _salCache(); if(okMsg)showToast(okMsg); renderSalary(); return true; }
+    if(r.ok){ const j=await r.json().catch(()=>({})); SAL=data; _salUT=j.updateTime||null; _salExists=true; _salErr=''; _salCache(); if(okMsg)showToast(okMsg); renderSalary(); try{ salRemindRender(); }catch(e){} return true; }
     const t=await r.text().catch(()=>'');
     if(r.status===403){ _salErr='rules'; showToast('⚙️ Salary storage is not switched on in Firebase yet'); renderSalary(); return false; }
     if(!(r.status===409||/FAILED_PRECONDITION|ALREADY_EXISTS/.test(t))){ showToast('❌ Could not save ('+r.status+')'); return false; }
@@ -5104,6 +5111,40 @@ function _salHydrate(){
 async function salViewImg(id){
   showToast('Opening screenshot…');
   try{ const v=await _salImgGet(id,'f'); const im=document.createElement('img'); im.src=v; viewPhoto(im); }catch(e){ showToast('❌ Could not open the screenshot'); }
+}
+
+
+// ── Salary reminder (Kanwar only): salary for a month is paid by the 10th of the next month.
+// From that 10th, Home and today's Planner show who is still unpaid for that month, until it is all entered.
+const SAL_PAY_DAY=10, SAL_REM_FROM='2026-11';
+function salDueList(){
+  if(!_salIsAdmin()||!SAL||!SAL.staff||!SAL.staff.length)return [];
+  const td=_sToday(), cur=td.slice(0,7), out=[];
+  for(let m=SAL_REM_FROM; m<cur; ){
+    const [y,mo]=m.split('-').map(Number), nx=new Date(y,mo,1), nm=nx.getFullYear()+'-'+String(nx.getMonth()+1).padStart(2,'0');
+    const due=nm+'-'+String(SAL_PAY_DAY).padStart(2,'0');
+    if(td>=due){
+      const who=SAL.staff.filter(s=>!s.archived).map(s=>({s,c:salMonth(s,m)})).filter(x=>x.c.payable>0&&x.c.toPay>0.5);
+      if(who.length)out.push({m,due,who,total:who.reduce((a,x)=>a+x.c.toPay,0)});
+    }
+    m=nm;
+  }
+  return out;
+}
+function salGoMonth(m){ salMo=m; switchTab('salary'); }
+function salRemindRender(){
+  const L=salDueList(), td=_sToday();
+  const card=x=>`<div class="sal-rem" onclick="salGoMonth('${x.m}')">
+      <div class="sal-rem-t">💰 ${_sMl(x.m)} salary — ${td===x.due?'due today':'not entered yet'}</div>
+      <div class="sal-rem-s">${x.who.map(w=>_se(w.s.name)+' '+_sm(w.c.toPay)).join(' · ')}</div>
+      <div class="sal-rem-s"><b>${_sm(x.total)}</b> to pay · due ${_sFd(x.due)} · tap to enter what you paid ›</div></div>`;
+  const dh=document.getElementById('salRemDash'); if(dh)dh.innerHTML=L.map(card).join('');
+  const ph=document.getElementById('salRemPlan'); if(ph)ph.innerHTML=(typeof currentPlannerDate==='undefined'||currentPlannerDate===td)?L.map(card).join(''):'';
+}
+// load salary records in the background after sign-in, so the reminder works without opening Salary
+function salRemindBoot(){
+  if(!_salIsAdmin())return;
+  Promise.all([_salLoaded?null:salLoad(),sbLinkLoad()]).then(()=>salRemindRender()).catch(()=>{});
 }
 
 // ── the sums ──
@@ -5537,6 +5578,7 @@ function startAs(who){
   DB.currentStaff = CURRENT_USER.name;
   applyRoleUI();
   init();
+  setTimeout(salRemindBoot,2500);
 }
 async function signOutPropDesk(){
   if(!confirm('Sign out of PropDesk on this device?'))return;
