@@ -5031,6 +5031,46 @@ function sbCareMonth(cid,m){
   return {n,amt:Math.round(amt*100)/100,paid:pays.reduce((a,p)=>a+(Number(p.amount)||0),0),pays,days:new Set(ent.map(e=>e.date)).size};
 }
 
+
+// ══ 🔗 READ-ONLY LINK TO RENTDESK: staff who live in a RentDesk room and have part of the rent cut from salary ══
+// RentDesk owns it: that rent is entered there with mode "Salary adjustment". This app only reads it.
+// Rule (agreed): the rent of a month is cut from the salary paid in that month — e.g. December's rent comes off
+// November's salary (paid by 10 Dec). Starts with December 2026 rent / November 2026 salary.
+const RDL_URL=FB_URL_BASE.replace(/propdesk\/$/,'rentdesk/main'), RDL_CACHE='rd_link_cache', RD_CUT_FROM='2026-12';
+let _rdl={rooms:[],at:0,err:'',busy:null};
+try{ const c=JSON.parse(localStorage.getItem(RDL_CACHE)||'null'); if(c&&Array.isArray(c.rooms)){ _rdl.rooms=c.rooms; _rdl.at=c.at||0; } }catch(e){}
+function rdLinkLoad(force){
+  if(_rdl.busy)return _rdl.busy;
+  if(!force&&_rdl.at&&Date.now()-_rdl.at<120000&&!_rdl.err)return Promise.resolve(false);
+  _rdl.busy=(async()=>{
+    try{
+      const r=await fetch(RDL_URL+'?key='+FB_KEY+'&mask.fieldPaths=data',{cache:'no-store'});
+      if(!r.ok)throw Object.assign(new Error('HTTP '+r.status),{status:r.status});
+      const j=await r.json(); const S=JSON.parse(j.fields.data.stringValue)||{};
+      const rooms=[];
+      (S.properties||[]).forEach(p=>(p.rooms||[]).forEach(rm=>{
+        const t=rm.tenant&&rm.tenant.name; if(!t)return;
+        rooms.push({pid:p.id,rid:rm.id,site:p.name,unit:(rm.type||'')+(rm.unitNo?' #'+rm.unitNo:''),tenant:t,
+          sa:(rm.payments||[]).filter(x=>x.mode==='Salary adjustment').map(x=>({month:x.month,amount:Number(x.amount)||0}))});
+      }));
+      const before=JSON.stringify(_rdl.rooms); _rdl.rooms=rooms; _rdl.at=Date.now(); _rdl.err='';
+      try{ localStorage.setItem(RDL_CACHE,JSON.stringify({rooms,at:_rdl.at})); }catch(e){}
+      return JSON.stringify(rooms)!==before;
+    }catch(e){ _rdl.err=e&&e.status===403?'rules':'offline'; return false; }
+    finally{ _rdl.busy=null; }
+  })();
+  return _rdl.busy;
+}
+const _rdNext=m=>{ const [y,mo]=m.split('-').map(Number), d=new Date(y,mo,1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); };
+// rent cut for salary month m: Salary-adjustment rent of the NEXT month in the linked RentDesk room
+function rdRentCut(s,m){
+  if(!s||!s.rdRoom)return null;
+  const rm=_rdl.rooms.find(x=>x.rid===s.rdRoom.rid)||null, rentM=_rdNext(m);
+  if(rentM<RD_CUT_FROM)return null;
+  const amt=rm?rm.sa.filter(x=>x.month===rentM).reduce((a,x)=>a+x.amount,0):0;
+  return {amt,rentM,site:rm?rm.site:(s.rdRoom.site||''),found:!!rm};
+}
+
 // ═══════════════════════════════════════
 // SALARY (Kanwar only) — staff, monthly salary, advances, salary payments, loans, leaves
 // Kept in its own place in the database (pd_salary/main), apart from PropDesk data that other logins download.
@@ -5144,7 +5184,7 @@ function salRemindRender(){
 // load salary records in the background after sign-in, so the reminder works without opening Salary
 function salRemindBoot(){
   if(!_salIsAdmin())return;
-  Promise.all([_salLoaded?null:salLoad(),sbLinkLoad()]).then(()=>salRemindRender()).catch(()=>{});
+  Promise.all([_salLoaded?null:salLoad(),sbLinkLoad(),rdLinkLoad()]).then(()=>salRemindRender()).catch(()=>{});
 }
 
 // ── the sums ──
@@ -5158,9 +5198,10 @@ function salMonth(s,m){
   const sb=s.sbCare?sbCareMonth(s.sbCare,m):null;              // Airbnb cleanings + "Mark paid" from SiteBooks (read live)
   const extra=E.reduce((a,e)=>a+(Number(e.amount)||0),0)+(sb?sb.amt:0);
   const adv=sum('advance'), sal=sum('salary')+sum('extra')+(sb?sb.paid:0), moved=sum('toLoan');
-  const paid=adv+sal-moved, payable=salary+extra-cut;
+  const rc=rdRentCut(s,m), rentCut=rc?rc.amt:0;                 // rent cut from salary (entered in RentDesk as "Salary adjustment")
+  const paid=adv+sal-moved, payable=salary+extra-cut-rentCut;
   const L=SAL.leaves[s.id]||{}; const days=Object.keys(L).filter(d=>d.slice(0,7)===m);
-  return {salary,extra,sb,cut,payable,adv,sal,moved,paid,toPay:payable-paid,absent:days.filter(d=>L[d]==='A').length,leave:days.filter(d=>L[d]==='L').length};
+  return {salary,extra,sb,cut,rc,rentCut,payable,adv,sal,moved,paid,toPay:payable-paid,absent:days.filter(d=>L[d]==='A').length,leave:days.filter(d=>L[d]==='L').length};
 }
 function salLoan(s){
   const given=SAL.pays.filter(p=>p.staffId===s.id&&(p.kind==='loan'||p.kind==='toLoan')).reduce((a,p)=>a+(Number(p.amount)||0),0);
@@ -5183,8 +5224,8 @@ async function renderSalary(){
   const root=document.getElementById('salaryRoot'); if(!root)return;
   if(!_salIsAdmin()){ root.innerHTML=''; return; }
   if(!salMo)salMo=_sMk();
-  if(!_salLoaded){ root.innerHTML='<div class="sal-empty">Loading salary records…</div>'; await Promise.all([salLoad(),sbLinkLoad(true)]); }
-  else sbLinkLoad().then(ch=>{ if(ch&&document.getElementById('page-salary').classList.contains('active'))renderSalary(); });
+  if(!_salLoaded){ root.innerHTML='<div class="sal-empty">Loading salary records…</div>'; await Promise.all([salLoad(),sbLinkLoad(true),rdLinkLoad(true)]); }
+  else Promise.all([sbLinkLoad(),rdLinkLoad()]).then(ch=>{ if((ch[0]||ch[1])&&document.getElementById('page-salary').classList.contains('active'))renderSalary(); });
   if(!SAL)SAL=_salEmpty();
   root.innerHTML=salStaff?_salStaffH():_salListH();
   _salHydrate();
@@ -5237,7 +5278,8 @@ function _salStaffH(){
     <div><span>Advance taken</span><b>${_sm(c.adv)}</b>${c.moved?`<em>${_sm(c.moved)} moved to loan</em>`:''}</div>
     <div><span>Paid so far</span><b class="g">${_sm(c.paid)}</b></div>
     <div><span>${c.toPay<0?'Overpaid':'Still to pay'}</span><b class="${c.toPay>0?'o':c.toPay<0?'r':'g'}">${_sm(Math.abs(c.toPay))}</b></div></div>
-  ${(c.extra||c.cut)?`<div class="sal-due">Salary ${_sm(c.salary)}${c.extra?' + Extras '+_sm(c.extra):''}${c.cut?' − Loan cut '+_sm(c.cut):''} = <b>${_sm(c.payable)} due</b></div>`:''}
+  ${(c.extra||c.cut||c.rentCut)?`<div class="sal-due">Salary ${_sm(c.salary)}${c.extra?' + Extras '+_sm(c.extra):''}${c.cut?' − Loan cut '+_sm(c.cut):''}${c.rentCut?' − '+_se(c.rc.site)+' rent ('+_sMl(c.rc.rentM)+') '+_sm(c.rentCut):''} = <b>${_sm(c.payable)} due</b></div>`:''}
+  ${c.rc&&!c.rentCut?`<div class="sal-warn">🏠 ${_se(c.rc.site||'Room')} rent for ${_sMl(c.rc.rentM)} is not entered in RentDesk as <b>Salary adjustment</b> yet${_rdl.err?' (could not read RentDesk just now)':''} — once it is, it comes off this salary automatically.</div>`:''}
   ${c.toPay<0?`<div class="sal-warn">Advance is ${_sm(-c.toPay)} more than this month's salary. <button class="sal-btn" onclick="salMoveToLoan('${s.id}',${-c.toPay})">Move ${_sm(-c.toPay)} to loan</button></div>`:''}
   <div class="sal-acts"><button class="submit-btn" style="margin:0;flex:1.3" onclick="salPayForm('${s.id}','advance')">+ Advance / payment</button><button class="sal-btn" style="flex:1" onclick="salEarnForm('${s.id}')">+ Extra earning</button></div>
   ${(()=>{ const E=SAL.earns.filter(e=>e.staffId===s.id&&e.month===salMo).sort((a,b)=>(a.date||'').localeCompare(b.date||'')), ye=salYearExtras(s,salMo), yt=Object.values(ye).reduce((a,v)=>a+v,0);
@@ -5259,6 +5301,7 @@ function _salStaffH(){
 // ── forms ──
 function _salModal(h){ const c=document.getElementById('modalContent'); c.innerHTML=h; document.getElementById('modalOverlay').classList.add('open'); }
 function salStaffForm(id){
+  if(!_rdl.at)rdLinkLoad().then(ch=>{ const el=document.getElementById('sf_rd'); if(ch&&el){ const cur=el.value; el.innerHTML='<option value="">— No —</option>'+_rdl.rooms.map(x=>`<option value="${_se(x.rid)}">${_se(x.site)} · ${_se(x.unit)} · ${_se(x.tenant)}</option>`).join(''); el.value=cur; } });
   if(!_sbl.at)sbLinkLoad().then(ch=>{ const el=document.getElementById('sf_sb'); if(ch&&el){ const cur=el.value; el.innerHTML='<option value="">— Not linked —</option>'+sbCaretakers().map(c=>`<option value="${_se(c.id)}">${_se(c.name)} (₹${Number(c.rate)||0} a cleaning)</option>`).join(''); el.value=cur; } });
   const s=id?SAL.staff.find(x=>x.id===id):null;
   _salModal(`<div class="modal-title">${s?'✏️ Edit staff':'👤 Add staff'}</div>
@@ -5270,6 +5313,8 @@ function salStaffForm(id){
     <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="sf_note" value="${s?_se(s.note||''):''}" placeholder="Optional"></div>
     <div class="form-group"><label class="form-label">Cleans Airbnb? Link to SiteBooks</label><select class="form-select" id="sf_sb"><option value="">— Not linked —</option>${sbCaretakers().map(c=>`<option value="${_se(c.id)}" ${s&&s.sbCare===c.id?'selected':''}>${_se(c.name)} (₹${Number(c.rate)||0} a cleaning)</option>`).join('')}</select>
       <div class="sal-sub" style="margin-top:4px">${sbCaretakers().length?'Their cleanings and "Mark paid" in SiteBooks then show in their salary automatically.':(_sbl.err?'Could not read SiteBooks right now.':'No caretakers found in SiteBooks yet.')}</div></div>
+    <div class="form-group"><label class="form-label">Lives in a RentDesk room? (rent cut from salary)</label><select class="form-select" id="sf_rd"><option value="">— No —</option>${_rdl.rooms.map(x=>`<option value="${_se(x.rid)}" ${s&&s.rdRoom&&s.rdRoom.rid===x.rid?'selected':''}>${_se(x.site)} · ${_se(x.unit)} · ${_se(x.tenant)}</option>`).join('')}</select>
+      <div class="sal-sub" style="margin-top:4px">Rent entered there as "Salary adjustment" is cut from the salary paid that month (December's rent → November's salary).</div></div>
     <button class="submit-btn" onclick="salStaffSave(${s?`'${s.id}'`:'null'})">Save</button>
     ${s?`<button class="cancel-btn" style="color:var(--red)" onclick="salStaffArchive('${s.id}',${!s.archived})">${s.archived?'Bring back to the list':'Remove from list (records kept)'}</button>`:''}
     <button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
@@ -5284,6 +5329,7 @@ async function salStaffSave(id){
     let s=d.staff.find(x=>x.id===nid);
     if(!s){ s={id:nid,rates:[],at:new Date().toISOString()}; d.staff.push(s); }
     s.name=name; s.phone=v('sf_phone'); s.joined=v('sf_join'); s.note=v('sf_note'); { const sb=(document.getElementById('sf_sb')||{}).value||''; if(sb)s.sbCare=sb; else delete s.sbCare; }
+    { const rd=(document.getElementById('sf_rd')||{}).value||''; const x=_rdl.rooms.find(y=>y.rid===rd); if(x)s.rdRoom={pid:x.pid,rid:x.rid,site:x.site}; else if(!rd)delete s.rdRoom; }
     s.rates=(s.rates||[]).filter(r=>r.from!==from); if(salRate(s,from)!==amt||!s.rates.length)s.rates.push({from,amount:amt});
   },id?'✅ Saved':'✅ Staff added');
   if(ok){ closeModal(); if(!id){ salStaff=nid; renderSalary(); } }
