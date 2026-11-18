@@ -545,6 +545,8 @@ body{background:#f0f2f8;color:#1c1d2e;max-width:480px;margin:0 auto;display:flex
 .sal-k.extra{background:var(--purplebg);color:var(--purple);}
 .sal-tiles em.g{color:var(--green);}
 .sal-chk{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--text2);margin:2px 0 12px;}
+.ocr-st{display:none;font-size:12px;line-height:1.5;margin-top:6px;}
+.ocr-fill{background:#FEF9C3!important;border-color:#EAB308!important;}
 /* salary */
 .sal-mnav{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
 .sal-mnav button{border:1.5px solid var(--border);background:var(--card);border-radius:10px;padding:6px 12px;font-size:15px;font-weight:700;color:var(--text2);cursor:pointer;}
@@ -4856,6 +4858,111 @@ async function exportProjectData(kind){
 // UI
 // ═══════════════════════════════════════
 
+
+// ══ 🔍 READ A PAYMENT SCREENSHOT (UTR / ref no., amount, date, payer UPI ID) ══
+// Runs on the phone (tesseract.js, loaded once from the internet, then kept by the browser).
+// It only SUGGESTS: fills empty boxes and highlights them; nothing is saved without you pressing Save.
+const OCR_JS='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+let _ocrW=null, _ocrLoading=null;
+function _ocrLib(){
+  if(window.Tesseract)return Promise.resolve();
+  if(_ocrLoading)return _ocrLoading;
+  _ocrLoading=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=OCR_JS; s.onload=()=>res(); s.onerror=()=>{ _ocrLoading=null; rej(new Error('reader not loaded')); }; document.head.appendChild(s); });
+  return _ocrLoading;
+}
+async function _ocrWorker(){
+  if(_ocrW)return _ocrW;
+  await _ocrLib();
+  _ocrW=await Tesseract.createWorker('eng',1,{logger:()=>{}});
+  return _ocrW;
+}
+// a clear, large-enough copy of the picture for reading (the saved photo is smaller)
+function _ocrPrep(file){
+  return new Promise((res,rej)=>{
+    const rd=new FileReader();
+    rd.onload=e=>{ const im=new Image(); im.onload=()=>{ const k=Math.min(1,2400/Math.max(im.width,im.height)); const c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k);
+      const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); res(c.toDataURL('image/png')); }; im.onerror=()=>rej(new Error('bad image')); im.src=e.target.result; };
+    rd.onerror=()=>rej(new Error('read failed')); rd.readAsDataURL(file);
+  });
+}
+const _OCR_MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12};
+function ocrParse(text){
+  const T=String(text||'').replace(/\r/g,'');
+  const lines=T.split('\n').map(l=>l.trim()).filter(Boolean);
+  const out={utr:'',amount:0,date:'',upi:'',upis:[]};
+  // ── UTR / UPI ref: a 12-digit number, ideally on or right after a label line ──
+  const lab=/(utr|upi\s*(transaction|txn|ref(erence)?)\s*(id|no|number)?|ref(erence)?\s*(no|number|id)|rrn|bank\s*ref)/i;
+  const twelve=s=>{ const m=String(s).replace(/[Oo](?=\d)|(?<=\d)[Oo]/g,'0').match(/(?<![\dA-Za-z])(\d{4}\s?\d{4}\s?\d{4})(?![\d])/); return m?m[1].replace(/\s/g,''):''; };
+  for(let i=0;i<lines.length&&!out.utr;i++){
+    if(lab.test(lines[i])&&!/order|google\s*transaction|merchant/i.test(lines[i])){ out.utr=twelve(lines[i].replace(lab,' '))||twelve(lines[i+1]||''); }
+  }
+  if(!out.utr&&/upi|@|paid|success|transfer|credited|debited/i.test(T)){ const all=lines.map(twelve).filter(Boolean); const uniq=[...new Set(all)]; if(uniq.length===1)out.utr=uniq[0]; }
+  // ── amount: a number right after ₹ / Rs / INR (the reader sometimes sees ₹ as "Z", "%", "=" or "2" at the start) ──
+  // Indian apps write 26,890 / 1,10,000. "326,890" can't be that — its first digit is a misread ₹ sign, so drop it.
+  const indOK=r=>{ const n=r.split('.')[0]; return /^\d{1,3}$/.test(n)||/^\d{1,2}(,\d{2})*,\d{3}$/.test(n); };
+  const fixR=r=>(!indOK(r)&&r.length>1&&/^\d/.test(r.slice(1))&&indOK(r.slice(1)))?r.slice(1):r;
+  const amts=[];
+  lines.forEach((l,i)=>{
+    const re=/(?:₹|rs\.?|inr|\bz|%|=)\s*([0-9]{1,3}(?:,[0-9]{2,3})+(?:\.[0-9]{1,2})?|[0-9]{2,7}(?:\.[0-9]{1,2})?)/ig; let m;
+    while((m=re.exec(l))){ const v=Number(fixR(m[1]).replace(/,/g,'')); if(v>0&&v<10000000)amts.push({v,i,strong:/₹|rs|inr/i.test(m[0])}); }
+  });
+  // the big amount often stands alone on its line, with the ₹ sign lost or misread ("X 24,620", "26,890")
+  lines.forEach((l,i)=>{ const m=l.match(/^[^\w\d]{0,2}[A-Za-z%=₹]?\.?\s*((?:\d{1,3}(?:,\d{2,3})+|\d{3,6})(?:\.\d{1,2})?)\s*\/?-?$/); if(!m)return; const raw=fixR(m[1]), v=Number(raw.replace(/,/g,''));
+    if(v>0&&v<10000000&&raw.replace(/\D/g,'')!==out.utr&&!/^\d{1,2}:\d{2}/.test(l)&&(raw.includes(',')||/[₹A-Za-z%=]/.test(l)))amts.push({v,i,strong:false,alone:true}); });
+  { const strong=amts.filter(a=>a.strong), alone=amts.filter(a=>a.alone); const pick=(strong.length?strong:alone.length?alone:amts)[0]; if(pick)out.amount=pick.v; }
+  // ── date ──
+  const ds=[];
+  const tryD=(d,mo,y)=>{ d=+d; mo=+mo; y=+y; if(y<100)y+=2000; if(!(d>=1&&d<=31&&mo>=1&&mo<=12&&y>=2020&&y<=2099))return; ds.push(y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0')); };
+  lines.forEach(l=>{ let m;
+    const a=/(\d{1,2})[\s\-]*(jan|feb|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec)[a-z]*[\s,\-']*(\d{2,4})/ig; while((m=a.exec(l)))tryD(m[1],_OCR_MON[m[2].toLowerCase()],m[3]);
+    const b=/(jan|feb|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec)[a-z]*\s+(\d{1,2}),?\s+(\d{4})/ig; while((m=b.exec(l)))tryD(m[2],_OCR_MON[m[1].toLowerCase()],m[3]);
+    const c=/(?<!\d)(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})(?!\d)/g; while((m=c.exec(l)))tryD(m[1],m[2],m[3]);
+  });
+  if(ds.length)out.date=ds[0];
+  // ── UPI IDs; the payer is the one under / after "From" ──
+  const upiRe=/([a-z0-9][a-z0-9._\-]{1,60}@[a-z][a-z0-9]{1,30})/ig;
+  lines.forEach(l=>{ let m; while((m=upiRe.exec(l)))out.upis.push(m[1].toLowerCase()); });
+  out.upis=[...new Set(out.upis)];
+  for(let i=0;i<lines.length&&!out.upi;i++){
+    if(/^\s*(from|debited\s*from|paid\s*by|sender)\b/i.test(lines[i])){ for(let j=i;j<=i+2&&j<lines.length;j++){ const m=lines[j].match(/([a-z0-9][a-z0-9._\-]{1,60}@[a-z][a-z0-9]{1,30})/i); if(m){ out.upi=m[1].toLowerCase(); break; } } }
+  }
+  return out;
+}
+async function ocrRead(file){
+  const img=await _ocrPrep(file);
+  const w=await _ocrWorker();
+  const r=await w.recognize(img);
+  return ocrParse(r&&r.data&&r.data.text||'');
+}
+// Fill a form from a screenshot. ids: {amt, ref, date, note, status}. Only empty boxes are filled.
+async function ocrFill(file,ids,todayStr){
+  const $o=id=>id&&document.getElementById(id);
+  const st=$o(ids.status);
+  const say=(h,c)=>{ if(st){ st.innerHTML=h; st.style.color=c||''; st.style.display=h?'block':'none'; } };
+  say('🔍 Reading the screenshot…'+(window.Tesseract?'':' (first time takes a little longer)'),'var(--muted)');
+  let r;
+  try{ r=await ocrRead(file); }catch(e){ say('Could not read the screenshot here — fill the boxes yourself.','var(--muted)'); return null; }
+  const got=[], warn=[];
+  const mark=el=>{ el.classList.add('ocr-fill'); el.addEventListener('input',()=>el.classList.remove('ocr-fill'),{once:true}); };
+  const ref=$o(ids.ref), amt=$o(ids.amt), dt=$o(ids.date), note=$o(ids.note);
+  if(r.utr){
+    if(ref&&!String(ref.value||'').trim()){ ref.value=r.utr; ref.dispatchEvent(new Event('input',{bubbles:true})); mark(ref); got.push('Ref '+r.utr.replace(/(\d{4})(?=\d)/g,'$1 ')); }
+    else if(ref&&String(ref.value).replace(/\s/g,'')!==r.utr) warn.push('ref on screenshot is '+r.utr);
+    else if(!ref&&note&&!String(note.value).includes(r.utr)){ note.value=(note.value?note.value.trim()+' · ':'')+'UTR '+r.utr; mark(note); got.push('UTR '+r.utr+' (in note)'); }
+  }
+  if(r.amount&&amt){
+    const cur=Number(String(amt.value||'').replace(/,/g,''));
+    if(!cur){ amt.value=r.amount; amt.dispatchEvent(new Event('input',{bubbles:true})); mark(amt); got.push('₹'+r.amount.toLocaleString('en-IN')); }
+    else if(Math.abs(cur-r.amount)>0.5) warn.push('screenshot says ₹'+r.amount.toLocaleString('en-IN')+', you entered ₹'+cur.toLocaleString('en-IN'));
+  }
+  if(r.date&&dt&&(!dt.value||dt.value===todayStr)&&r.date<=todayStr&&r.date!==dt.value){ dt.value=r.date; dt.dispatchEvent(new Event('change',{bubbles:true})); mark(dt); const d=new Date(r.date+'T00:00:00'); got.push(d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})); }
+  const payer=r.upi;   // only when the screenshot marks it as From / Debited from / Paid by
+  if(payer&&note&&!String(note.value).toLowerCase().includes(payer)){ note.value=(note.value?note.value.trim()+' · ':'')+'UPI '+payer; mark(note); got.push('UPI '+payer); }
+  if(!got.length&&!warn.length){ say('Nothing readable found on the screenshot — fill the boxes yourself.','var(--muted)'); return r; }
+  say((got.length?'✅ Read from screenshot: <b>'+got.join(' · ')+'</b> — please check.':'')+(warn.length?'<br>⚠️ '+warn.join(' · '):''),warn.length?'#B45309':'var(--green)');
+  return r;
+}
+
 // ═══════════════════════════════════════
 // MORE SHEET (bottom bar: 4 tabs + More, like RentDesk)
 // ═══════════════════════════════════════
@@ -5097,7 +5204,7 @@ function salPayForm(sid,kind){
     <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="sp_note" placeholder="Optional"></div>
     <div class="form-group"><label class="form-label">Screenshot</label>
       <label class="sal-up"><input type="file" accept="image/*" style="display:none" onchange="salPickImg(this)"><span id="sp_imgl">📷 Add screenshot (optional)</span></label>
-      <img id="sp_prev" style="display:none;max-width:100%;max-height:180px;border-radius:12px;margin-top:8px"></div>
+      <div id="sp_ocr" class="ocr-st"></div><img id="sp_prev" style="display:none;max-width:100%;max-height:180px;border-radius:12px;margin-top:8px"></div>
     <button class="submit-btn" id="sp_save" onclick="salPaySave('${sid}')">Save</button>
     <button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
 }
@@ -5115,7 +5222,7 @@ function salEarnForm(sid){
       <div class="form-group"><label class="form-label">UPI / ref no.</label><input class="form-input" id="sp_ref" placeholder="Optional"></div></div>
     <div class="form-group"><label class="form-label">Screenshot</label>
       <label class="sal-up"><input type="file" accept="image/*" style="display:none" onchange="salPickImg(this)"><span id="sp_imgl">📷 Add screenshot (optional)</span></label>
-      <img id="sp_prev" style="display:none;max-width:100%;max-height:180px;border-radius:12px;margin-top:8px"></div>
+      <div id="sp_ocr" class="ocr-st"></div><img id="sp_prev" style="display:none;max-width:100%;max-height:180px;border-radius:12px;margin-top:8px"></div>
     <button class="submit-btn" id="sp_save" onclick="salEarnSave('${sid}')">Save</button>
     <button class="cancel-btn" onclick="closeModal()">Cancel</button>`);
 }
@@ -5144,6 +5251,8 @@ async function salPickImg(inp){
   document.getElementById('sp_imgl').textContent='Preparing…';
   try{ const full=await fileToPhoto(f); const thumb=await thumbPhoto(full); _salImgSel={full,thumb};
     const pv=document.getElementById('sp_prev'); pv.src=full; pv.style.display='block'; document.getElementById('sp_imgl').textContent='📷 Change screenshot';
+    const earn=!!document.getElementById('se_amt');
+    ocrFill(f,{amt:earn?'se_amt':'sp_amt',ref:'sp_ref',date:earn?'se_date':'sp_date',note:earn?'se_note':'sp_note',status:'sp_ocr'},_sToday());
   }catch(e){ _salImgSel=null; document.getElementById('sp_imgl').textContent='📷 Add screenshot (optional)'; showToast('❌ Could not read that picture'); }
 }
 async function salPaySave(sid){
